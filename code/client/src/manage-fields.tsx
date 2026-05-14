@@ -35,7 +35,7 @@ export const ManageFields: React.FC<{ onFieldsChanged: () => void }> = ({ onFiel
             setNewFieldType("text");
             fetchFields();
             onFieldsChanged();
-        } catch (error) {
+        } catch {
             alert("Failed to add field. Field name might already exist.");
         }
     };
