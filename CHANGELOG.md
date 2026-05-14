@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (lead-row component split)
+
+### Added
+- **`lead-edit-dialog.tsx`**: extracted edit form + all related state (`firstName`, `lastName`, `age`, `phoneNumber`, `customFields`, `customFieldValues`, `error`, `loading`) and the custom-fields fetch into a standalone component; accepts `lead`, `open`, `onOpenChange`, `onUpdate`
+- **`lead-opps-panel.tsx`**: extracted opportunities table, fetch logic, and delete-by-local-state into a standalone component; accepts `leadId`
+- **`lead-edit-dialog.test.tsx`**: 9 tests — pre-fill, field updates, API submission, custom fields, `onUpdate`/`onOpenChange` callbacks, error display, error clear on close
+- **`lead-opps-panel.test.tsx`**: 4 tests — empty state, unnamed opp, full display with expected value, no-refetch-on-delete
+
+### Changed
+- **`lead-row.tsx`** reduced from 200 lines to 48: now owns only `isEditing`/`showOpps` state and composes `LeadEditDialog` + `LeadOppPanel`; data cells read directly from `lead` props (removes a state-staleness bug in the previous mirrored state approach)
+- **`lead-row.test.tsx`** trimmed from 15 tests to 5: lead data display, count badge shown/hidden, and two smoke tests confirming child components mount; dialog and panel behavior tests moved to their own files
+
+---
+
 ## 2026-05-14 (lint cleanup)
 
 ### Fixed
