@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (leads table UX)
+
+### Added
+- **shadcn `Table` component** added to `src/components/ui/table.tsx`
+- `leads.tsx` now fetches leads and opportunities in parallel (`Promise.all`) and computes per-lead opp counts at load time
+- "Show Opps" button replaced with an `Opportunities` button showing a filled count badge (hidden when zero) and a `ChevronDown`/`ChevronUp` icon — users see how many opps exist before clicking; button switches to `secondary` variant when the panel is open
+- Nested opportunities panel uses a shadcn `Table` with columns for name, stage, value, expected value, and a destructive Delete button
+- New tests: count badge visible with 2 opps, badge hidden when count is 0, opportunity count badge in `leads.test.tsx`
+
+### Changed
+- All bare `<table>/<thead>/<tr>/<th>/<td>` in `leads.tsx` and `lead-row.tsx` replaced with shadcn `Table*` primitives
+- Fixed `font-fold` typo → `font-bold` in the Leads heading
+
+---
+
 ## 2026-05-14 (shadcn/ui + lead edit modal + code cleanup)
 
 ### Added

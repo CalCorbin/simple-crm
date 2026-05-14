@@ -3,9 +3,11 @@ import { Lead, CustomField, Opportunity } from "./types";
 import axios from "axios";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "./lib/utils";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, onUpdate }) => {
+export const LeadRow: React.FC<{ lead: Lead; oppCount: number; onUpdate: () => void }> = ({ lead, oppCount, onUpdate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [showOpps, setShowOpps] = useState(false);
     const [firstName, setFirstName] = useState(lead.firstName);
@@ -75,50 +77,68 @@ export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, 
 
     return (
         <>
-            <tr>
-                <td>
-                    <button onClick={() => setIsEditing(true)} className="mr-2">
-                        Edit
-                    </button>
-                    <button onClick={() => setShowOpps(!showOpps)}>{showOpps ? "Hide" : "Show"} Opps</button>
-                </td>
-                <td>{firstName}</td>
-                <td>{lastName}</td>
-                <td>{age}</td>
-                <td>{phoneNumber}</td>
-            </tr>
+            <TableRow>
+                <TableCell>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                            Edit
+                        </Button>
+                        <Button
+                            variant={showOpps ? "secondary" : "outline"}
+                            size="sm"
+                            onClick={() => setShowOpps(!showOpps)}
+                            className="gap-1.5"
+                        >
+                            Opportunities
+                            {oppCount > 0 && (
+                                <span className="bg-primary text-primary-foreground text-xs font-semibold px-1.5 py-0.5 rounded-full leading-none">
+                                    {oppCount}
+                                </span>
+                            )}
+                            {showOpps ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                        </Button>
+                    </div>
+                </TableCell>
+                <TableCell>{firstName}</TableCell>
+                <TableCell>{lastName}</TableCell>
+                <TableCell>{age}</TableCell>
+                <TableCell>{phoneNumber}</TableCell>
+            </TableRow>
             {showOpps && (
-                <tr>
-                    <td colSpan={5} className="p-4 bg-gray-50">
-                        <div className="space-y-4">
-                            <h3 className="font-bold">Opportunities</h3>
+                <TableRow>
+                    <TableCell colSpan={5} className="bg-muted/30 p-4">
+                        <div className="space-y-3">
+                            <h3 className="font-semibold text-sm">Opportunities</h3>
                             {opportunities.length === 0 ? (
-                                <p className="text-gray-500">No opportunities</p>
+                                <p className="text-sm text-muted-foreground">No opportunities</p>
                             ) : (
-                                <div className="space-y-2">
-                                    {opportunities.map(opp => (
-                                        <div key={opp.id} className="flex justify-between items-center p-2 bg-white border rounded">
-                                            <div>
-                                                <span className="font-medium">{opp.name || "Unnamed"}</span>
-                                                <span className="text-sm text-gray-600 ml-2">{opp.stage.name}</span>
-                                                <span className="text-sm text-gray-600 ml-2">{formatCurrency(opp.value)}</span>
-                                                <span className="text-sm text-gray-500 ml-2">
+                                <Table>
+                                    <TableBody>
+                                        {opportunities.map(opp => (
+                                            <TableRow key={opp.id}>
+                                                <TableCell className="font-medium">{opp.name || "Unnamed"}</TableCell>
+                                                <TableCell className="text-muted-foreground">{opp.stage.name}</TableCell>
+                                                <TableCell>{formatCurrency(opp.value)}</TableCell>
+                                                <TableCell className="text-muted-foreground">
                                                     Expected: {formatCurrency(opp.value * opp.stage.conversionLikelihood)}
-                                                </span>
-                                            </div>
-                                            <button
-                                                onClick={() => deleteOpportunity(opp.id)}
-                                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => deleteOpportunity(opp.id)}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             )}
                         </div>
-                    </td>
-                </tr>
+                    </TableCell>
+                </TableRow>
             )}
 
             <Dialog open={isEditing} onOpenChange={handleOpenChange}>

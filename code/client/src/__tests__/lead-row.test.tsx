@@ -17,10 +17,10 @@ const opp: Opportunity = {
     name: "Deal A",
 };
 
-function renderRow(onUpdate = vi.fn()) {
+function renderRow(onUpdate = vi.fn(), oppCount = 0) {
     render(
         <table><tbody>
-            <LeadRow lead={lead} onUpdate={onUpdate} />
+            <LeadRow lead={lead} oppCount={oppCount} onUpdate={onUpdate} />
         </tbody></table>
     );
     return { onUpdate };
@@ -112,15 +112,25 @@ describe("LeadRow", () => {
         expect(screen.queryByText("Invalid age")).not.toBeInTheDocument();
     });
 
-    it("shows the opportunities panel when Show Opps is clicked", async () => {
+    it("shows the opp count badge when oppCount is non-zero", () => {
+        renderRow(vi.fn(), 3);
+        expect(screen.getByText("3")).toBeInTheDocument();
+    });
+
+    it("hides the opp count badge when oppCount is zero", () => {
+        renderRow(vi.fn(), 0);
+        expect(screen.queryByText("0")).not.toBeInTheDocument();
+    });
+
+    it("shows the opportunities panel when Opportunities is clicked", async () => {
         renderRow();
-        fireEvent.click(screen.getByText("Show Opps"));
-        expect(await screen.findByText("Opportunities")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: /opportunities/i }));
+        expect(await screen.findByText("No opportunities")).toBeInTheDocument();
     });
 
     it("shows no opportunities message when the lead has none", async () => {
         renderRow();
-        fireEvent.click(screen.getByText("Show Opps"));
+        fireEvent.click(screen.getByRole("button", { name: /opportunities/i }));
         expect(await screen.findByText("No opportunities")).toBeInTheDocument();
     });
 
@@ -131,7 +141,7 @@ describe("LeadRow", () => {
             return Promise.resolve({ data: [] });
         });
         renderRow();
-        fireEvent.click(screen.getByText("Show Opps"));
+        fireEvent.click(screen.getByRole("button", { name: /opportunities/i }));
         expect(await screen.findByText("Unnamed")).toBeInTheDocument();
     });
 
@@ -141,7 +151,7 @@ describe("LeadRow", () => {
             return Promise.resolve({ data: [] });
         });
         renderRow();
-        fireEvent.click(screen.getByText("Show Opps"));
+        fireEvent.click(screen.getByRole("button", { name: /opportunities/i }));
         expect(await screen.findByText("Deal A")).toBeInTheDocument();
         expect(await screen.findByText("Qualified")).toBeInTheDocument();
         expect(await screen.findByText("$5,000.00")).toBeInTheDocument();
@@ -154,7 +164,7 @@ describe("LeadRow", () => {
         });
         mockedAxios.delete.mockResolvedValue({});
         renderRow();
-        fireEvent.click(screen.getByText("Show Opps"));
+        fireEvent.click(screen.getByRole("button", { name: /opportunities/i }));
         fireEvent.click(await screen.findByText("Delete"));
         await waitFor(() => expect(mockedAxios.delete).toHaveBeenCalledWith("/api/opportunities/10"));
     });
