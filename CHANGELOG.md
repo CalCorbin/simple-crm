@@ -4,6 +4,26 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (frontend test coverage)
+
+### Added
+- **Component test suite** (client): 59 tests across 8 files, one file per component (`App`, `AddLead`, `LeadRow`, `Leads`, `ManageFields`, `ManageSettings`, `ManageStages`, `Pipeline`)
+- Tests cover all key behaviors: form submission with payload verification, API error display, success/empty states, navigation, inline editing, opportunity display and deletion, custom field rendering, settings save flow, stage add/edit/delete with confirmation, and pipeline report rendering including won/lost row highlighting
+- Integration test for `handleFieldsChanged`: verifies a field added in Settings appears in the AddLead form on return to Home
+- `vi.clearAllMocks()` in `beforeEach` to prevent mock call-history leakage between tests
+
+### Coverage (client)
+| Metric | Before | After |
+|---|---|---|
+| Statements | — | 98.4% |
+| Branches | — | 91% |
+| Functions | — | 98.8% |
+| Lines | — | 100% |
+
+Remaining branch gaps are all unreachable internal guards or dead code (e.g. `lead-row.tsx:77` — edit form success message never renders due to React 19 automatic batching of `setSuccess`/`setIsEditing`).
+
+---
+
 ## 2026-05-14 (test coverage expansion)
 
 ### Added
