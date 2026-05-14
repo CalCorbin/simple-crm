@@ -59,48 +59,62 @@ export const LeadEditDialog: React.FC<{
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {error && <p className="text-red-500">{error}</p>}
-                    <input
-                        type="text"
-                        placeholder="First Name"
-                        value={firstName}
-                        onChange={e => setFirstName(e.target.value)}
-                        className="block w-full p-2 border border-gray-300 rounded"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Last Name"
-                        value={lastName}
-                        onChange={e => setLastName(e.target.value)}
-                        className="block w-full p-2 border border-gray-300 rounded"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Age"
-                        value={age}
-                        onChange={e => setAge(e.target.value)}
-                        className="block w-full p-2 border border-gray-300 rounded"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Phone Number"
-                        value={phoneNumber}
-                        onChange={e => setPhoneNumber(e.target.value)}
-                        className="block w-full p-2 border border-gray-300 rounded"
-                    />
-                    {customFields.map(field => (
+                    <div>
+                        <label htmlFor="lead-first-name" className="block text-sm text-muted-foreground mb-1">First Name</label>
                         <input
-                            key={field.id}
+                            id="lead-first-name"
                             type="text"
-                            placeholder={field.label}
-                            value={customFieldValues[field.name] || ""}
-                            onChange={e =>
-                                setCustomFieldValues({
-                                    ...customFieldValues,
-                                    [field.name]: e.target.value,
-                                })
-                            }
+                            value={firstName}
+                            onChange={e => setFirstName(e.target.value)}
                             className="block w-full p-2 border border-gray-300 rounded"
                         />
+                    </div>
+                    <div>
+                        <label htmlFor="lead-last-name" className="block text-sm text-muted-foreground mb-1">Last Name</label>
+                        <input
+                            id="lead-last-name"
+                            type="text"
+                            value={lastName}
+                            onChange={e => setLastName(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="lead-age" className="block text-sm text-muted-foreground mb-1">Age</label>
+                        <input
+                            id="lead-age"
+                            type="text"
+                            value={age}
+                            onChange={e => setAge(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="lead-phone" className="block text-sm text-muted-foreground mb-1">Phone Number</label>
+                        <input
+                            id="lead-phone"
+                            type="text"
+                            value={phoneNumber}
+                            onChange={e => setPhoneNumber(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+                    {customFields.map(field => (
+                        <div key={field.id}>
+                            <label htmlFor={`lead-custom-${field.name}`} className="block text-sm text-muted-foreground mb-1">{field.label}</label>
+                            <input
+                                id={`lead-custom-${field.name}`}
+                                type="text"
+                                value={customFieldValues[field.name] || ""}
+                                onChange={e =>
+                                    setCustomFieldValues({
+                                        ...customFieldValues,
+                                        [field.name]: e.target.value,
+                                    })
+                                }
+                                className="block w-full p-2 border border-gray-300 rounded"
+                            />
+                        </div>
                     ))}
                     <DialogFooter>
                         <Button type="submit" disabled={loading} className="w-full">

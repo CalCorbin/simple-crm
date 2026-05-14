@@ -49,7 +49,7 @@ describe("LeadOppPanel", () => {
         expect(await screen.findByText("Deal A")).toBeInTheDocument();
         expect(screen.getByText("Qualified")).toBeInTheDocument();
         expect(screen.getByText("$5,000.00")).toBeInTheDocument();
-        expect(screen.getByText("Expected: $2,500.00")).toBeInTheDocument();
+        expect(screen.getByText("$2,500.00")).toBeInTheDocument();
     });
 
     it("removes the deleted opportunity from the list without refetching", async () => {
@@ -60,5 +60,36 @@ describe("LeadOppPanel", () => {
         await waitFor(() => expect(mockedAxios.delete).toHaveBeenCalledWith("/api/opportunities/10"));
         expect(screen.queryByText("Deal A")).not.toBeInTheDocument();
         expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+    });
+
+    it("displays a formatted close date when one is set", async () => {
+        const oppWithDate: Opportunity = { ...opp, closeDate: "2026-06-01" };
+        mockedAxios.get.mockResolvedValue({ data: [oppWithDate] });
+        renderPanel();
+        expect(await screen.findByText("Jun 1, 2026")).toBeInTheDocument();
+    });
+
+    it("displays a dash when no close date is set", async () => {
+        mockedAxios.get.mockResolvedValue({ data: [opp] });
+        renderPanel();
+        expect(await screen.findByText("—")).toBeInTheDocument();
+    });
+
+    it("opens the edit dialog when Edit is clicked", async () => {
+        mockedAxios.get.mockResolvedValue({ data: [opp] });
+        renderPanel();
+        fireEvent.click(await screen.findByText("Edit"));
+        expect(screen.getByText("Edit Opportunity")).toBeInTheDocument();
+    });
+
+    it("reflects updated opportunity name in the list after a successful edit", async () => {
+        const updatedOpp = { ...opp, name: "Deal B" };
+        mockedAxios.get.mockResolvedValue({ data: [opp] });
+        mockedAxios.put.mockResolvedValue({ data: updatedOpp });
+        renderPanel();
+        fireEvent.click(await screen.findByText("Edit"));
+        fireEvent.click(await screen.findByText("Update Opportunity"));
+        expect(await screen.findByText("Deal B")).toBeInTheDocument();
+        expect(screen.queryByText("Deal A")).not.toBeInTheDocument();
     });
 });

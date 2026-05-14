@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (opportunity edit modal)
+
+### Added
+- **`opp-edit-dialog.tsx`**: modal for editing an opportunity within a lead; fields for name, value, stage (select populated from `GET /api/stages`), close date, and any opportunity-scoped custom fields; resets form state on open; calls `onUpdate(res.data)` with the server response so the panel updates without refetching
+- **`opp-edit-dialog.test.tsx`**: 12 tests — pre-fill, stage selector, value/stage/close-date/custom-field submission, `onUpdate`/`onOpenChange` callbacks, error display, error clear on close, `closeDate: null` when cleared, custom field filter (opportunity only)
+- **Edit button** added to each row in `LeadOppPanel`; clicking opens `OppEditDialog` for that opportunity; on save the row updates in place via local state replace
+
+### Changed
+- **`lead-opps-panel.tsx`**: replaced nested shadcn `<Table>` with a CSS grid `<div>` — removes the table-in-table anti-pattern and enables independent column definitions (Name, Stage, Value, Expected, Close Date, Actions) with a header row and hairline separator
+- **`lead-opps-panel.tsx`**: expected value now uses `opp.expectedValue` from the server (respects won/lost likelihood overrides) with a fallback to the naive `value × conversionLikelihood`
+- **`lead-opps-panel.test.tsx`**: updated expected-value assertion to match the new column layout (no longer prefixed "Expected: "); added tests for close date display (formatted and absent) and edit dialog open/update flow
+- **`lead-edit-dialog.tsx`** and **`opp-edit-dialog.tsx`**: all inputs now have explicit `<label htmlFor>` associations; placeholder-only inputs removed; tests updated to use `getByLabelText` throughout
+
+---
+
 ## 2026-05-14 (lead-row component split)
 
 ### Added
