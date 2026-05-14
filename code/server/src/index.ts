@@ -5,38 +5,38 @@ import { Stage } from "./entity/Stage";
 import { Opportunity } from "./entity/Opportunity";
 import { AppSetting } from "./entity/AppSetting";
 import { seedDatabase } from "./seed";
-import * as express from "express";
+import express from "express";
+import { DataSource } from "typeorm";
 
-const run = async () => {
-    await AppDataSource.initialize();
-    await seedDatabase();
+// Accepts a DataSource so tests can inject an in-memory SQLite instance without touching the production DB.
+export function buildApp(ds: DataSource) {
     const app = express();
     app.use(express.json());
 
     // Settings endpoints
     app.get("/settings", async (req, res) => {
-        const settings = await AppDataSource.manager.getRepository(AppSetting).find();
+        const settings = await ds.manager.getRepository(AppSetting).find();
         res.json(settings);
     });
 
     app.put("/settings/:key", async (req, res) => {
-        const setting = await AppDataSource.manager.getRepository(AppSetting).findOne({ where: { key: req.params.key } });
+        const setting = await ds.manager.getRepository(AppSetting).findOne({ where: { key: req.params.key } });
         if (!setting) {
             const created = new AppSetting();
             created.key = req.params.key;
             created.value = req.body.value;
-            await AppDataSource.manager.getRepository(AppSetting).save(created);
+            await ds.manager.getRepository(AppSetting).save(created);
             res.json(created);
             return;
         }
         setting.value = req.body.value;
-        await AppDataSource.manager.getRepository(AppSetting).save(setting);
+        await ds.manager.getRepository(AppSetting).save(setting);
 
         if (setting.key === "wonStageLikelihood" || setting.key === "lostStageLikelihood") {
             const status = setting.key === "wonStageLikelihood" ? "won" : "lost";
             const newLikelihood = parseFloat(setting.value);
-            const stagesRepo = AppDataSource.manager.getRepository(Stage);
-            const oppsRepo = AppDataSource.manager.getRepository(Opportunity);
+            const stagesRepo = ds.manager.getRepository(Stage);
+            const oppsRepo = ds.manager.getRepository(Opportunity);
             const stages = await stagesRepo.find({ where: { status } });
             for (const stage of stages) {
                 const stageOpps = await oppsRepo.find({ where: { stage: { id: stage.id } } });
@@ -50,7 +50,7 @@ const run = async () => {
 
     // Custom Fields endpoints
     app.get("/custom-fields", async (req, res) => {
-        const fields = await AppDataSource.manager.getRepository(CustomField).find();
+        const fields = await ds.manager.getRepository(CustomField).find();
         res.json(fields);
     });
 
@@ -61,7 +61,7 @@ const run = async () => {
         if (req.body.entity) field.entity = req.body.entity;
         if (req.body.type) field.type = req.body.type;
         try {
-            await AppDataSource.manager.getRepository(CustomField).save(field);
+            await ds.manager.getRepository(CustomField).save(field);
             res.json(field);
         } catch (error) {
             res.status(400).json({ error: "Field name already exists" });
@@ -69,13 +69,13 @@ const run = async () => {
     });
 
     app.delete("/custom-fields/:id", async (req, res) => {
-        await AppDataSource.manager.getRepository(CustomField).delete(req.params.id);
+        await ds.manager.getRepository(CustomField).delete(req.params.id);
         res.json({ success: true });
     });
 
     // Leads endpoints
     app.get("/leads", async (req, res) => {
-        const leads = await AppDataSource.manager.getRepository(Lead).find();
+        const leads = await ds.manager.getRepository(Lead).find();
         res.json(leads);
     });
 
@@ -86,12 +86,12 @@ const run = async () => {
         lead.age = req.body.age;
         lead.phoneNumber = req.body.phoneNumber;
         lead.customFields = req.body.customFields || {};
-        await AppDataSource.manager.getRepository(Lead).save(lead);
+        await ds.manager.getRepository(Lead).save(lead);
         res.json(lead);
     });
 
     app.put("/leads/:id", async (req, res) => {
-        const lead = await AppDataSource.manager
+        const lead = await ds.manager
             .getRepository(Lead)
             .findOne({ where: { id: parseInt(req.params.id) } });
         lead.firstName = req.body.firstName;
@@ -99,13 +99,13 @@ const run = async () => {
         lead.age = req.body.age;
         lead.phoneNumber = req.body.phoneNumber;
         lead.customFields = req.body.customFields || {};
-        await AppDataSource.manager.getRepository(Lead).save(lead);
+        await ds.manager.getRepository(Lead).save(lead);
         res.json(lead);
     });
 
     // Stages endpoints
     app.get("/stages", async (req, res) => {
-        const stages = await AppDataSource.manager.getRepository(Stage).find({ order: { order: "ASC" } });
+        const stages = await ds.manager.getRepository(Stage).find({ order: { order: "ASC" } });
         res.json(stages);
     });
 
@@ -114,39 +114,39 @@ const run = async () => {
         stage.name = req.body.name;
         stage.status = req.body.status;
         stage.conversionLikelihood = req.body.conversionLikelihood;
-        const maxOrder = await AppDataSource.manager
+        const maxOrder = await ds.manager
             .getRepository(Stage)
             .createQueryBuilder("stage")
             .select("MAX(stage.order)", "max")
             .getRawOne();
         stage.order = (maxOrder.max || 0) + 1;
-        await AppDataSource.manager.getRepository(Stage).save(stage);
+        await ds.manager.getRepository(Stage).save(stage);
         res.json(stage);
     });
 
     app.put("/stages/:id", async (req, res) => {
-        const stage = await AppDataSource.manager.getRepository(Stage).findOne({ where: { id: parseInt(req.params.id) } });
+        const stage = await ds.manager.getRepository(Stage).findOne({ where: { id: parseInt(req.params.id) } });
         stage.name = req.body.name;
         stage.status = req.body.status;
         stage.conversionLikelihood = req.body.conversionLikelihood;
         if (req.body.order !== undefined) stage.order = req.body.order;
-        await AppDataSource.manager.getRepository(Stage).save(stage);
+        await ds.manager.getRepository(Stage).save(stage);
         res.json(stage);
     });
 
     app.delete("/stages/:id", async (req, res) => {
-        await AppDataSource.manager.getRepository(Stage).delete(req.params.id);
+        await ds.manager.getRepository(Stage).delete(req.params.id);
         res.json({ success: true });
     });
 
     // Opportunities endpoints
     app.get("/opportunities", async (req, res) => {
-        const opportunities = await AppDataSource.manager.getRepository(Opportunity).find();
+        const opportunities = await ds.manager.getRepository(Opportunity).find();
         res.json(opportunities);
     });
 
     app.post("/opportunities", async (req, res) => {
-        const settings = await AppDataSource.manager.getRepository(AppSetting).find();
+        const settings = await ds.manager.getRepository(AppSetting).find();
         const minValue = parseFloat(settings.find(s => s.key === "minimumOpportunityValue")?.value ?? "0");
         const wonLikelihood = parseFloat(settings.find(s => s.key === "wonStageLikelihood")?.value ?? "1");
         const lostLikelihood = parseFloat(settings.find(s => s.key === "lostStageLikelihood")?.value ?? "0");
@@ -157,32 +157,35 @@ const run = async () => {
         }
 
         const opp = new Opportunity();
-        opp.lead = await AppDataSource.manager.getRepository(Lead).findOne({ where: { id: req.body.leadId } });
-        opp.stage = await AppDataSource.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } });
+        [opp.lead, opp.stage] = await Promise.all([
+            ds.manager.getRepository(Lead).findOne({ where: { id: req.body.leadId } }),
+            ds.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } }),
+        ]);
         opp.value = req.body.value;
         opp.name = req.body.name;
+        opp.closeDate = req.body.closeDate ?? null;
         opp.customFields = req.body.customFields || {};
         const likelihood =
             opp.stage.status === "won" ? wonLikelihood : opp.stage.status === "lost" ? lostLikelihood : opp.stage.conversionLikelihood;
         opp.expectedValue = opp.value * likelihood;
-        await AppDataSource.manager.getRepository(Opportunity).save(opp);
+        await ds.manager.getRepository(Opportunity).save(opp);
 
         opp.stage.expectedValue = (opp.stage.expectedValue || 0) + opp.expectedValue;
-        await AppDataSource.manager.getRepository(Stage).save(opp.stage);
+        await ds.manager.getRepository(Stage).save(opp.stage);
 
         res.json(opp);
     });
 
     app.put("/opportunities/:id", async (req, res) => {
-        const settings = await AppDataSource.manager.getRepository(AppSetting).find();
+        const settings = await ds.manager.getRepository(AppSetting).find();
         const minValue = parseFloat(settings.find(s => s.key === "minimumOpportunityValue")?.value ?? "0");
         const wonLikelihood = parseFloat(settings.find(s => s.key === "wonStageLikelihood")?.value ?? "1");
         const lostLikelihood = parseFloat(settings.find(s => s.key === "lostStageLikelihood")?.value ?? "0");
 
-        const opp = await AppDataSource.manager.getRepository(Opportunity).findOne({ where: { id: parseInt(req.params.id) } });
+        const opp = await ds.manager.getRepository(Opportunity).findOne({ where: { id: parseInt(req.params.id) } });
         const oldExpectedValue = opp.expectedValue || 0;
         const oldStage = opp.stage;
-        if (req.body.stageId) opp.stage = await AppDataSource.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } });
+        if (req.body.stageId) opp.stage = await ds.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } });
         if (req.body.value !== undefined) {
             if (req.body.value < minValue) {
                 res.status(400).json({ error: `Value must be at least ${minValue}` });
@@ -191,39 +194,40 @@ const run = async () => {
             opp.value = req.body.value;
         }
         if (req.body.name !== undefined) opp.name = req.body.name;
+        if (req.body.closeDate !== undefined) opp.closeDate = req.body.closeDate;
         if (req.body.customFields) opp.customFields = req.body.customFields;
         const likelihood =
             opp.stage.status === "won" ? wonLikelihood : opp.stage.status === "lost" ? lostLikelihood : opp.stage.conversionLikelihood;
         opp.expectedValue = opp.value * likelihood;
-        await AppDataSource.manager.getRepository(Opportunity).save(opp);
+        await ds.manager.getRepository(Opportunity).save(opp);
 
         if (oldStage.id !== opp.stage.id) {
             oldStage.expectedValue = (oldStage.expectedValue || 0) - oldExpectedValue;
-            await AppDataSource.manager.getRepository(Stage).save(oldStage);
+            await ds.manager.getRepository(Stage).save(oldStage);
             opp.stage.expectedValue = (opp.stage.expectedValue || 0) + opp.expectedValue;
-            await AppDataSource.manager.getRepository(Stage).save(opp.stage);
+            await ds.manager.getRepository(Stage).save(opp.stage);
         } else {
             opp.stage.expectedValue = (opp.stage.expectedValue || 0) - oldExpectedValue + opp.expectedValue;
-            await AppDataSource.manager.getRepository(Stage).save(opp.stage);
+            await ds.manager.getRepository(Stage).save(opp.stage);
         }
 
         res.json(opp);
     });
 
     app.delete("/opportunities/:id", async (req, res) => {
-        const opp = await AppDataSource.manager.getRepository(Opportunity).findOne({ where: { id: parseInt(req.params.id) } });
+        const opp = await ds.manager.getRepository(Opportunity).findOne({ where: { id: parseInt(req.params.id) } });
         if (opp) {
             opp.stage.expectedValue = (opp.stage.expectedValue || 0) - (opp.expectedValue || 0);
-            await AppDataSource.manager.getRepository(Stage).save(opp.stage);
-            await AppDataSource.manager.getRepository(Opportunity).delete(req.params.id);
+            await ds.manager.getRepository(Stage).save(opp.stage);
+            await ds.manager.getRepository(Opportunity).delete(req.params.id);
         }
         res.json({ success: true });
     });
 
     // Pipeline report endpoint
     app.get("/pipeline", async (req, res) => {
-        const stages = await AppDataSource.manager.getRepository(Stage).find({ order: { order: "ASC" } });
-        const opportunities = await AppDataSource.manager.getRepository(Opportunity).find();
+        const stages = await ds.manager.getRepository(Stage).find({ order: { order: "ASC" } });
+        const opportunities = await ds.manager.getRepository(Opportunity).find();
 
         let totalValue = 0;
         let expectedValue = 0;
@@ -247,9 +251,22 @@ const run = async () => {
         res.json({ totalValue, expectedValue, byStage });
     });
 
+    return app;
+}
+
+/* v8 ignore start -- production entry point, not exercised in tests */
+const run = async () => {
+    await AppDataSource.initialize();
+    await seedDatabase();
+    const app = buildApp(AppDataSource);
     app.listen(3000, () => {
         console.log("Server is running on http://localhost:3000");
     });
 };
+/* v8 ignore stop */
 
-run();
+// Guard prevents run() from firing when this module is imported by tests.
+if (require.main === module) {
+    /* v8 ignore next -- only fires when executed directly, not via import */
+    run();
+}

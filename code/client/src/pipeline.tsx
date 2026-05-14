@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { PipelineReport } from "./types";
+import { formatCurrency } from "./lib/utils";
 
 export const Pipeline: React.FC = () => {
     const [report, setReport] = useState<PipelineReport | null>(null);
@@ -20,7 +21,6 @@ export const Pipeline: React.FC = () => {
     if (loading) return <p>Loading pipeline...</p>;
     if (!report) return <p>No pipeline data</p>;
 
-    const formatCurrency = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
     const formatPercent = (value: number) => `${(value * 100).toFixed(0)}%`;
 
     return (

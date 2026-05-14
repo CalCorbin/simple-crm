@@ -35,7 +35,7 @@ export const ManageStages: React.FC = () => {
             setNewStatus("pending");
             setNewLikelihood("0.5");
             fetchStages();
-        } catch (error) {
+        } catch {
             alert("Failed to add stage");
         }
     };
@@ -57,7 +57,7 @@ export const ManageStages: React.FC = () => {
             });
             setEditingId(null);
             fetchStages();
-        } catch (error) {
+        } catch {
             alert("Failed to update stage");
         }
     };
@@ -88,7 +88,7 @@ export const ManageStages: React.FC = () => {
                                             onChange={e => setEditName(e.target.value)}
                                             className="block w-full p-2 border rounded"
                                         />
-                                        <select value={editStatus} onChange={e => setEditStatus(e.target.value as any)} className="block w-full p-2 border rounded">
+                                        <select value={editStatus} onChange={e => setEditStatus(e.target.value as Stage["status"])} className="block w-full p-2 border rounded">
                                             <option>pending</option>
                                             <option>won</option>
                                             <option>lost</option>
@@ -143,7 +143,7 @@ export const ManageStages: React.FC = () => {
                     placeholder="Stage name"
                     className="block w-full p-2 border rounded"
                 />
-                <select value={newStatus} onChange={e => setNewStatus(e.target.value as any)} className="block w-full p-2 border rounded">
+                <select value={newStatus} onChange={e => setNewStatus(e.target.value as Stage["status"])} className="block w-full p-2 border rounded">
                     <option value="pending">Pending</option>
                     <option value="won">Won</option>
                     <option value="lost">Lost</option>
