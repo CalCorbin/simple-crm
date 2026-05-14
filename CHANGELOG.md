@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (lint cleanup)
+
+### Fixed
+- `manage-fields.tsx`: unused `error` binding in `catch` clause removed (`catch (error)` → `catch`)
+- `manage-stages.tsx`: two `as any` casts on `<select>` onChange handlers replaced with `as Stage["status"]`
+- `lead-row.tsx`: `react-hooks/exhaustive-deps` warning resolved by inlining the opportunities fetch into the effect and adding `lead.id` to the dependency array; standalone `fetchOpportunities` function removed
+- `eslint.config.js`: `coverage/` and `src/components/ui/` added to the ignore list — `coverage/` to suppress warnings on generated report files, `src/components/ui/` to suppress the `react-refresh/only-export-components` warning on shadcn-generated files that export non-component values (e.g. `buttonVariants`)
+
+---
+
 ## 2026-05-14 (leads table UX)
 
 ### Added

@@ -28,20 +28,16 @@ export const LeadRow: React.FC<{ lead: Lead; oppCount: number; onUpdate: () => v
     }, [isEditing]);
 
     useEffect(() => {
-        if (showOpps && !oppsFetched.current) {
-            oppsFetched.current = true;
-            fetchOpportunities();
-        }
-    }, [showOpps]);
+        if (!showOpps || oppsFetched.current) return;
+        oppsFetched.current = true;
+        axios.get("/api/opportunities").then(res => {
+            setOpportunities(res.data.filter((opp: Opportunity) => opp.lead.id === lead.id));
+        });
+    }, [showOpps, lead.id]);
 
     const fetchCustomFields = async () => {
         const result = await axios.get("/api/custom-fields");
         setCustomFields(result.data);
-    };
-
-    const fetchOpportunities = async () => {
-        const result = await axios.get("/api/opportunities");
-        setOpportunities(result.data.filter((opp: Opportunity) => opp.lead.id === lead.id));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
