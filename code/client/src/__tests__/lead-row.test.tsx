@@ -98,6 +98,20 @@ describe("LeadRow", () => {
         expect(await screen.findByText("Invalid age")).toBeInTheDocument();
     });
 
+    it("clears the error when the dialog is closed and reopened", async () => {
+        mockedAxios.put.mockRejectedValue({ response: { data: "Invalid age" } });
+        renderRow();
+        fireEvent.click(screen.getByText("Edit"));
+        fireEvent.click(await screen.findByText("Update Lead"));
+        expect(await screen.findByText("Invalid age")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+        fireEvent.click(screen.getByText("Edit"));
+        await screen.findByPlaceholderText("First Name");
+        expect(screen.queryByText("Invalid age")).not.toBeInTheDocument();
+    });
+
     it("shows the opportunities panel when Show Opps is clicked", async () => {
         renderRow();
         fireEvent.click(screen.getByText("Show Opps"));

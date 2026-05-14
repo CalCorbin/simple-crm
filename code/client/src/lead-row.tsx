@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Lead, CustomField, Opportunity } from "./types";
 import axios from "axios";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "./lib/utils";
 
 export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, onUpdate }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -13,8 +16,8 @@ export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, 
     const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>(lead.customFields || {});
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+    const oppsFetched = useRef(false);
 
     useEffect(() => {
         if (isEditing) {
@@ -23,7 +26,8 @@ export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, 
     }, [isEditing]);
 
     useEffect(() => {
-        if (showOpps) {
+        if (showOpps && !oppsFetched.current) {
+            oppsFetched.current = true;
             fetchOpportunities();
         }
     }, [showOpps]);
@@ -50,7 +54,6 @@ export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, 
                 phoneNumber,
                 customFields: customFieldValues,
             });
-            setSuccess(true);
             setIsEditing(false);
             onUpdate();
         } catch (error) {
@@ -60,76 +63,19 @@ export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, 
         setLoading(false);
     };
 
-    const deleteOpportunity = async (oppId: number) => {
-        await axios.delete(`/api/opportunities/${oppId}`);
-        fetchOpportunities();
+    const handleOpenChange = (open: boolean) => {
+        if (!open) setError("");
+        setIsEditing(open);
     };
 
-    const formatCurrency = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
-
-    if (isEditing) {
-        return (
-            <tr>
-                <td colSpan={6}>
-                    <form onSubmit={handleSubmit} className="space-y-4 p-4 rounded bg-gray-100 w-96">
-                        <h2 className="text-xl font-fold">Edit</h2>
-                        {error && <p className="text-red-500">{error}</p>}
-                        {success && <p className="text-green-500">Lead updated successfully</p>}
-                        <input
-                            type="text"
-                            placeholder="First Name"
-                            value={firstName}
-                            onChange={e => setFirstName(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Last Name"
-                            value={lastName}
-                            onChange={e => setLastName(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Age"
-                            value={age}
-                            onChange={e => setAge(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Phone Number"
-                            value={phoneNumber}
-                            onChange={e => setPhoneNumber(e.target.value)}
-                            className="block w-full p-2 border border-gray-300 rounded"
-                        />
-                        {customFields.map(field => (
-                            <input
-                                key={field.id}
-                                type="text"
-                                placeholder={field.label}
-                                value={customFieldValues[field.name] || ""}
-                                onChange={e =>
-                                    setCustomFieldValues({
-                                        ...customFieldValues,
-                                        [field.name]: e.target.value,
-                                    })
-                                }
-                                className="block w-full p-2 border border-gray-300 rounded"
-                            />
-                        ))}
-                        <button type="submit" disabled={loading} className="block w-full p-2 bg-blue-500 text-white rounded">
-                            Update Lead
-                        </button>
-                    </form>
-                </td>
-            </tr>
-        );
-    }
+    const deleteOpportunity = async (oppId: number) => {
+        await axios.delete(`/api/opportunities/${oppId}`);
+        setOpportunities(prev => prev.filter(o => o.id !== oppId));
+    };
 
     return (
         <>
-            <tr key={lead.id}>
+            <tr>
                 <td>
                     <button onClick={() => setIsEditing(true)} className="mr-2">
                         Edit
@@ -174,6 +120,65 @@ export const LeadRow: React.FC<{ lead: Lead; onUpdate: () => void }> = ({ lead, 
                     </td>
                 </tr>
             )}
+
+            <Dialog open={isEditing} onOpenChange={handleOpenChange}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Edit Lead</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && <p className="text-red-500">{error}</p>}
+                        <input
+                            type="text"
+                            placeholder="First Name"
+                            value={firstName}
+                            onChange={e => setFirstName(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Last Name"
+                            value={lastName}
+                            onChange={e => setLastName(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Age"
+                            value={age}
+                            onChange={e => setAge(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Phone Number"
+                            value={phoneNumber}
+                            onChange={e => setPhoneNumber(e.target.value)}
+                            className="block w-full p-2 border border-gray-300 rounded"
+                        />
+                        {customFields.map(field => (
+                            <input
+                                key={field.id}
+                                type="text"
+                                placeholder={field.label}
+                                value={customFieldValues[field.name] || ""}
+                                onChange={e =>
+                                    setCustomFieldValues({
+                                        ...customFieldValues,
+                                        [field.name]: e.target.value,
+                                    })
+                                }
+                                className="block w-full p-2 border border-gray-300 rounded"
+                            />
+                        ))}
+                        <DialogFooter>
+                            <Button type="submit" disabled={loading} className="w-full">
+                                Update Lead
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };

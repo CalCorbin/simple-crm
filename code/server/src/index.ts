@@ -157,8 +157,10 @@ export function buildApp(ds: DataSource) {
         }
 
         const opp = new Opportunity();
-        opp.lead = await ds.manager.getRepository(Lead).findOne({ where: { id: req.body.leadId } });
-        opp.stage = await ds.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } });
+        [opp.lead, opp.stage] = await Promise.all([
+            ds.manager.getRepository(Lead).findOne({ where: { id: req.body.leadId } }),
+            ds.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } }),
+        ]);
         opp.value = req.body.value;
         opp.name = req.body.name;
         opp.closeDate = req.body.closeDate ?? null;
@@ -192,7 +194,7 @@ export function buildApp(ds: DataSource) {
             opp.value = req.body.value;
         }
         if (req.body.name !== undefined) opp.name = req.body.name;
-        if (req.body.closeDate !== undefined) opp.closeDate = req.body.closeDate ?? null;
+        if (req.body.closeDate !== undefined) opp.closeDate = req.body.closeDate;
         if (req.body.customFields) opp.customFields = req.body.customFields;
         const likelihood =
             opp.stage.status === "won" ? wonLikelihood : opp.stage.status === "lost" ? lostLikelihood : opp.stage.conversionLikelihood;

@@ -4,6 +4,23 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (shadcn/ui + lead edit modal + code cleanup)
+
+### Added
+- **shadcn/ui** installed in the client (`@base-ui/react`, `clsx`, `tailwind-merge`, `lucide-react`); `Dialog` and `Button` components added to `src/components/ui/`
+- `@/*` path alias wired into `tsconfig.app.json`, `vite.config.ts`, and `vitest.config.ts`
+
+### Changed
+- **`LeadRow` edit form** converted from an inline table-row replacement to a `Dialog` modal; the `<tr>` always stays in the DOM
+- `formatCurrency` extracted from `lead-row.tsx` and `pipeline.tsx` into `src/lib/utils.ts` (single source of truth)
+- `deleteOpportunity` now removes the item from local React state instead of re-fetching all opportunities from the API
+- `oppsFetched` ref added to `LeadRow` — prevents redundant `GET /api/opportunities` calls on repeated show/hide
+- `POST /opportunities`: lead and stage DB lookups now run in parallel via `Promise.all`
+- `PUT /opportunities/:id`: removed unreachable `?? null` inside the `!== undefined` guard for `closeDate`
+- Removed meaningless `key={lead.id}` from the non-iterated `<tr>` in `LeadRow`
+
+---
+
 ## 2026-05-14 (closeDate field)
 
 ### Added
