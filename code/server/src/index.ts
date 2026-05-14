@@ -161,6 +161,7 @@ export function buildApp(ds: DataSource) {
         opp.stage = await ds.manager.getRepository(Stage).findOne({ where: { id: req.body.stageId } });
         opp.value = req.body.value;
         opp.name = req.body.name;
+        opp.closeDate = req.body.closeDate ?? null;
         opp.customFields = req.body.customFields || {};
         const likelihood =
             opp.stage.status === "won" ? wonLikelihood : opp.stage.status === "lost" ? lostLikelihood : opp.stage.conversionLikelihood;
@@ -191,6 +192,7 @@ export function buildApp(ds: DataSource) {
             opp.value = req.body.value;
         }
         if (req.body.name !== undefined) opp.name = req.body.name;
+        if (req.body.closeDate !== undefined) opp.closeDate = req.body.closeDate ?? null;
         if (req.body.customFields) opp.customFields = req.body.customFields;
         const likelihood =
             opp.stage.status === "won" ? wonLikelihood : opp.stage.status === "lost" ? lostLikelihood : opp.stage.conversionLikelihood;

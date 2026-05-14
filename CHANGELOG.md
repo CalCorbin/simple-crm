@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (closeDate field)
+
+### Added
+- **`Opportunity.closeDate`** (server): nullable `date` column on the `Opportunity` TypeORM entity; auto-migrated via `synchronize: true` on next server start (tradeoff: safe for SQLite dev, would require an explicit migration in production)
+- `POST /opportunities` and `PUT /opportunities/:id` pass `closeDate` through from the request body
+- `closeDate?: string | null` added to the client `Opportunity` interface in `types.ts`
+- Two new tests in `opportunity.test.ts` under `describe("closeDate")`: persists a date string when set; stores `null` when omitted
+
+---
+
 ## 2026-05-14 (frontend test coverage)
 
 ### Added

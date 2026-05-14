@@ -93,6 +93,28 @@ describe("Stage.expectedValue tracking", () => {
     });
 });
 
+describe("closeDate", () => {
+    it("persists closeDate when set", async () => {
+        const stage = await createStage(ds);
+        const lead = await createLead(ds);
+        const opp = Object.assign(new Opportunity(), { lead, stage, value: 1000, expectedValue: 500, closeDate: "2026-12-31" });
+        await ds.manager.getRepository(Opportunity).save(opp);
+
+        const saved = await ds.manager.getRepository(Opportunity).findOne({ where: { id: opp.id } });
+        expect(saved!.closeDate).toBe("2026-12-31");
+    });
+
+    it("is null when not provided", async () => {
+        const stage = await createStage(ds);
+        const lead = await createLead(ds);
+        const opp = Object.assign(new Opportunity(), { lead, stage, value: 1000, expectedValue: 500 });
+        await ds.manager.getRepository(Opportunity).save(opp);
+
+        const saved = await ds.manager.getRepository(Opportunity).findOne({ where: { id: opp.id } });
+        expect(saved!.closeDate).toBeNull();
+    });
+});
+
 describe("minimumOpportunityValue", () => {
     it("reads the configured minimum from AppSetting", async () => {
         await ds.manager.getRepository(AppSetting).save(
