@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (add lead modal)
+
+### Added
+- **`add-lead-dialog.tsx`**: new component wrapping `AddLead` in a Dialog modal; conditionally renders the form only when open so state resets on each open; accepts `open`, `onOpenChange`, `onSuccess`, and `refreshTrigger` props
+- **Add Lead button** in the `Leads` header row opens the modal; on successful submit the modal closes and the leads list refreshes
+- Labels (`<label htmlFor>`) added to all inputs in `AddLead`; placeholders removed
+
+### Changed
+- **`add-lead.tsx`**: added `onSuccess` prop — when provided, calls it on success (modal path) instead of showing an inline success message (standalone path); removed card container styling and title (now supplied by the dialog)
+- **`leads.tsx`**: replaced standalone `<h2>` heading with a flex header row containing the title and the Add Lead button; manages `addLeadOpen` state; composes `AddLeadDialog`
+- **`App.tsx`**: removed standalone `<AddLead>` from the home page; add-lead UX now lives entirely within `<Leads>`
+- Tests updated: `getByPlaceholderText` → `getByLabelText` throughout `add-lead.test.tsx` and `App.test.tsx`; App integration test updated to open the modal before asserting on the custom-field input
+
+### Tests added
+- `"calls onSuccess instead of showing an inline message when the prop is provided"` — covers the `onSuccess` branch in `AddLead`
+- `"closes the Add Lead modal and refreshes leads after a lead is created"` — covers `handleLeadAdded` in `Leads`; uses `within(dialog)` to disambiguate the two "Add Lead" buttons in the DOM
+
+---
+
 ## 2026-05-14 (opportunity edit modal)
 
 ### Added

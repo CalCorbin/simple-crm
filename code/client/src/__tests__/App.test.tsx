@@ -47,7 +47,7 @@ describe("App", () => {
         expect(await screen.findByText("Leads")).toBeInTheDocument();
     });
 
-    it("AddLead picks up a new custom field after one is added in Settings", async () => {
+    it("Add Lead modal picks up a new custom field after one is added in Settings", async () => {
         let fields: object[] = [];
         mockedAxios.get.mockImplementation((url: string) => {
             if (url === "/api/custom-fields") return Promise.resolve({ data: fields });
@@ -60,9 +60,6 @@ describe("App", () => {
 
         render(<App />);
 
-        // Confirm the Company input doesn't exist yet on the Home page
-        expect(screen.queryByPlaceholderText("Company")).not.toBeInTheDocument();
-
         // Navigate to Settings, add the field
         fireEvent.click(screen.getByText("Settings"));
         fireEvent.change(await screen.findByPlaceholderText("company"), { target: { value: "company" } });
@@ -70,8 +67,9 @@ describe("App", () => {
         fireEvent.click(screen.getByText("Add Field"));
         await waitFor(() => expect(mockedAxios.post).toHaveBeenCalled());
 
-        // Return to Home — AddLead should fetch and render the new field input
+        // Return to Home and open the Add Lead modal — it should fetch and render the new field input
         fireEvent.click(screen.getByText("Home"));
-        expect(await screen.findByPlaceholderText("Company")).toBeInTheDocument();
+        fireEvent.click(await screen.findByRole("button", { name: "Add Lead" }));
+        expect(await screen.findByLabelText("Company")).toBeInTheDocument();
     });
 });
