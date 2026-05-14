@@ -11,7 +11,7 @@
         "typecheck": "tsc -p . --noEmit",
         "typeorm": "typeorm-ts-node-commonjs",
         "seed": "ts-node --transpile-only src/seed.ts",
-        "test": "vitest run"
+        "test": "vitest run --coverage"
     },
     "dependencies": {
         "express": "^5.0.0",
@@ -23,6 +23,7 @@
         "@swc/core": "^1.15.33",
         "@types/express": "^5.0.0",
         "@types/node": "^22.10.0",
+        "@vitest/coverage-v8": "^4.1.6",
         "nodemon": "^3.1.7",
         "ts-node": "^10.9.2",
         "typescript": "^5.7.0",

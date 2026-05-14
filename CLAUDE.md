@@ -70,14 +70,14 @@ Both packages use **Vitest** (`npm run test` from the root runs all suites).
 
 ### Server
 
-- Config: `code/server/vitest.config.ts` — uses `unplugin-swc` instead of esbuild because TypeORM's decorators require `emitDecoratorMetadata`, which esbuild doesn't support. Do not add `module: { type: "commonjs" }` to the SWC config — Vitest manages the module system and that option breaks it.
+- Config: `code/server/vitest.config.ts` — uses `unplugin-swc` instead of esbuild because TypeORM's decorators require `emitDecoratorMetadata`, which esbuild doesn't support. Do not add `module: { type: "commonjs" }` to the SWC config — Vitest manages the module system and that option breaks it. Coverage via `@vitest/coverage-v8`; HTML report written to `code/server/coverage/` (gitignored).
 - Setup: `src/__tests__/setup.ts` imports `reflect-metadata` before every test.
 - Helpers: `src/__tests__/helpers.ts` exports `createTestDataSource()` (in-memory SQLite), `createLead()`, and `createStage()`. Use these in every test file — each test gets its own `DataSource` instance initialized in `beforeEach` and destroyed in `afterEach`.
 - Tests: `src/__tests__/opportunity.test.ts`
 
 ### Client
 
-- Config: `code/client/vitest.config.ts` — jsdom environment, `@vitejs/plugin-react` plugin.
+- Config: `code/client/vitest.config.ts` — jsdom environment, `@vitejs/plugin-react` plugin. Coverage via `@vitest/coverage-v8`; HTML report written to `code/client/coverage/` (gitignored).
 - Setup: `src/test-setup.ts` imports `@testing-library/jest-dom` for DOM matchers.
 - Mock axios at the top of any component test: `vi.mock("axios")` + `vi.mocked(axios).get.mockResolvedValue({ data: [] })`.
 - Tests: `src/__tests__/App.test.tsx`
