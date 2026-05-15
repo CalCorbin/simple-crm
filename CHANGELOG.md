@@ -4,6 +4,58 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-15 (server test coverage — 100%)
+
+### Tests
+- **`api.test.ts`**: 11 new tests reaching 100% branch coverage on the server
+  - `GET /forecast` — no groupBy, invalid `groupBy` (404), valid `groupBy` returning grouped buckets
+  - `PUT /opportunities/:id` — `closeDate` field update; same-stage update when `conversionLikelihood` is 0 (exercises `|| 0` guard on `Stage.expectedValue`)
+  - `DELETE /opportunities/:id` — non-existent ID (covers `if (opp)` false branch); zero-expectedValue opportunity (exercises `|| 0` guards in delete path)
+  - `GET /pipeline` — null `expectedValue` in DB (exercises `?? 0` guard in stage totals)
+- **`forecast.test.ts`**: 3 new unit tests covering remaining `buildForecastBuckets` branches — absent `expectedValue` in grouped and non-grouped buckets; two opportunities sharing the same group key (exercises the map-accumulation truthy path on `groupMap.get`)
+
+### Changed
+- `index.ts`: `/* v8 ignore next */` comment moved to wrap the entire `if (require.main === module)` block rather than just the `run()` call inside it, eliminating the uncovered true-branch on that guard
+
+### Coverage (server)
+| Metric | Before | After |
+|---|---|---|
+| Statements | 94.09% | 100% |
+| Branches | 86.23% | 100% |
+| Functions | 95.45% | 100% |
+| Lines | 94.73% | 100% |
+
+---
+
+## 2026-05-15 (forecast component modularization)
+
+### Changed
+- **`forecast.tsx`** split into four focused files: `forecast-utils.ts` (pure `bucketAccent` + `fmt` helpers), `pill.tsx` (group-by toggle button), `group-by-selector.tsx` (pill row + "Group by" label, hidden when no custom fields), `forecast-matrix.tsx` (table); `forecast.tsx` reduced to state, data fetching, and layout composition
+
+### Tests
+- **`forecast-utils.test.ts`**: 5 tests — all four `bucketAccent` branches (Past/amber, Beyond 6 Months/gray, No Close Date/gray, other/blue) and `fmt` USD formatting
+- **`pill.test.tsx`**: 4 tests — label render, active/inactive class variants, click handler
+- **`group-by-selector.test.tsx`**: 6 tests — renders nothing with no fields, shows None + field pills, active pill highlighting, `setGroupBy` calls for None and a named field
+- **`forecast-matrix.test.tsx`**: 10 tests — bucket labels, formatted totals, grouped column headers, per-group cell values, Unassigned column ordering, `opacity-40` on empty rows, `$0` fallback for undefined `totalExpectedValue`, `—` placeholder for missing group intersections
+- **`forecast.test.tsx`**: 5 tests — heading render, matrix appears after load, no table before load, GroupBySelector shown/hidden based on custom fields, grouped fetch triggered on pill click
+
+### Coverage (client — forecast feature)
+| Metric | Before | After |
+|---|---|---|
+| Statements | 100% | 100% |
+| Branches | 92.1% | 100% |
+| Functions | 100% | 100% |
+| Lines | 100% | 100% |
+
+---
+
+## 2026-05-15 (AddLeadDialog type fix)
+
+### Fixed
+- **`add-lead-dialog.tsx`**: prop passed to `AddLead` renamed from `refreshTrigger` to `triggerRefresh` to match the `AddLead` component's actual prop name
+
+---
+
 ## 2026-05-15 (forecast page)
 
 ### Added

@@ -57,15 +57,17 @@ describe("ManageFields", () => {
         alertMock.mockRestore();
     });
 
-    it("updates the entity select when changed", () => {
+    it("updates the entity select when changed", async () => {
         render(<ManageFields onFieldsChanged={vi.fn()} />);
+        await screen.findByText("No custom fields yet");
         const selects = screen.getAllByRole("combobox");
         fireEvent.change(selects[0], { target: { value: "opportunity" } });
         expect(selects[0]).toHaveValue("opportunity");
     });
 
-    it("updates the type select when changed", () => {
+    it("updates the type select when changed", async () => {
         render(<ManageFields onFieldsChanged={vi.fn()} />);
+        await screen.findByText("No custom fields yet");
         const selects = screen.getAllByRole("combobox");
         fireEvent.change(selects[1], { target: { value: "number" } });
         expect(selects[1]).toHaveValue("number");

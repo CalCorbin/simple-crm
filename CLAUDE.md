@@ -57,12 +57,16 @@ TypeORM runs with `synchronize: true` — schema auto-migrates from entity defin
 
 ### Client structure
 
-Page routing is local state in `App.tsx` (`"home" | "pipeline" | "settings"`):
-- **Home** — `Leads` (list/edit) + `AddLead`
-- **Pipeline** — `Pipeline` (aggregated report from `GET /pipeline`)
-- **Settings** — `ManageFields`, `ManageStages`, `ManageSettings`
+Page routing is local state in `App.tsx` (`"home" | "pipeline" | "forecast" | "settings"`). Components are organized under `src/features/` by the page they belong to:
 
-Shared TypeScript types are in `code/client/src/types.ts`; keep them in sync with server entities by hand (no codegen).
+| Feature folder | Components |
+|---|---|
+| `features/leads/` | `Leads`, `LeadRow`, `LeadEditDialog`, `AddLead`, `AddLeadDialog`, `LeadOppPanel`, `OppAddDialog`, `OppEditDialog` |
+| `features/pipeline/` | `Pipeline` |
+| `features/forecast/` | `Forecast` |
+| `features/settings/` | `ManageFields`, `ManageStages`, `ManageSettings` |
+
+Shared UI primitives live in `components/ui/` (Button, Dialog, Table). Shared TypeScript types are in `types.ts`; keep them in sync with server entities by hand (no codegen).
 
 ## Testing
 
@@ -80,7 +84,7 @@ Both packages use **Vitest** (`npm run test` from the root runs all suites).
 - Config: `code/client/vitest.config.ts` — jsdom environment, `@vitejs/plugin-react` plugin. Coverage via `@vitest/coverage-v8`; HTML report written to `code/client/coverage/` (gitignored).
 - Setup: `src/test-setup.ts` imports `@testing-library/jest-dom` for DOM matchers.
 - Mock axios at the top of any component test: `vi.mock("axios")` + `vi.mocked(axios).get.mockResolvedValue({ data: [] })`.
-- Tests: `src/__tests__/App.test.tsx`
+- Tests live in a `__tests__/` directory inside each feature folder (e.g. `features/leads/__tests__/leads.test.tsx`). `App.test.tsx` lives in `src/__tests__/`.
 
 ### Priority coverage areas
 

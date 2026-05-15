@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { Pipeline } from "../pipeline";
-import { PipelineReport } from "../types";
+import { PipelineReport } from "../../../types";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);

@@ -3,7 +3,9 @@ import { DataSource } from "typeorm";
 import request from "supertest";
 import { buildApp } from "../index";
 import { Stage } from "../entity/Stage";
+import { Opportunity } from "../entity/Opportunity";
 import { AppSetting } from "../entity/AppSetting";
+import { CustomField } from "../entity/CustomField";
 import { createTestDataSource, createStage, createLead } from "./helpers";
 
 let ds: DataSource;
@@ -284,6 +286,18 @@ describe("minimumOpportunityValue enforcement on update", () => {
 });
 
 describe("PUT /opportunities/:id field updates", () => {
+    it("updates closeDate when provided", async () => {
+        const stage = await createStage(ds);
+        const lead = await createLead(ds);
+        const created = await request(app)
+            .post("/opportunities")
+            .send({ leadId: lead.id, stageId: stage.id, value: 5000, name: "Deal" });
+        const res = await request(app)
+            .put(`/opportunities/${created.body.id}`)
+            .send({ closeDate: "2026-07-01" });
+        expect(res.body.closeDate).toBe("2026-07-01");
+    });
+
     it("updates the name when provided", async () => {
         const stage = await createStage(ds);
         const lead = await createLead(ds);
@@ -336,6 +350,21 @@ describe("PUT /opportunities/:id field updates", () => {
             .put(`/opportunities/${created.body.id}`)
             .send({ value: 20000 });
         expect(res.body.expectedValue).toBe(1000);
+    });
+});
+
+describe("PUT /opportunities/:id same-stage zero-expectedValue update", () => {
+    it("keeps Stage.expectedValue at 0 when likelihood is 0 and stage does not change", async () => {
+        const stage = await createStage(ds, { conversionLikelihood: 0, expectedValue: 0 });
+        const lead = await createLead(ds);
+        const created = await request(app)
+            .post("/opportunities")
+            .send({ leadId: lead.id, stageId: stage.id, value: 10000, name: "Zero Deal" });
+        await request(app)
+            .put(`/opportunities/${created.body.id}`)
+            .send({ name: "Updated Zero Deal" });
+        const updated = await ds.manager.getRepository(Stage).findOne({ where: { id: stage.id } });
+        expect(updated!.expectedValue).toBe(0);
     });
 });
 
@@ -403,6 +432,56 @@ describe("DELETE /opportunities/:id", () => {
         const list = await request(app).get("/opportunities");
         expect(list.body).toHaveLength(0);
     });
+
+    it("returns success when deleting a non-existent opportunity id", async () => {
+        const res = await request(app).delete("/opportunities/9999");
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual({ success: true });
+    });
+
+    it("handles deleting a zero-expectedValue opportunity", async () => {
+        const stage = await createStage(ds, { conversionLikelihood: 0, expectedValue: 0 });
+        const lead = await createLead(ds);
+        const created = await request(app)
+            .post("/opportunities")
+            .send({ leadId: lead.id, stageId: stage.id, value: 10000, name: "Zero Deal" });
+        const res = await request(app).delete(`/opportunities/${created.body.id}`);
+        expect(res.status).toBe(200);
+        const updated = await ds.manager.getRepository(Stage).findOne({ where: { id: stage.id } });
+        expect(updated!.expectedValue).toBe(0);
+    });
+});
+
+// ─── Forecast ────────────────────────────────────────────────────────────────
+
+describe("GET /forecast", () => {
+    it("returns buckets with no groupBy", async () => {
+        const res = await request(app).get("/forecast");
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body.buckets)).toBe(true);
+        expect(res.body.buckets[0]).toHaveProperty("label");
+        expect(res.body.buckets[0]).toHaveProperty("count");
+    });
+
+    it("returns 404 when groupBy references a non-existent custom field", async () => {
+        const res = await request(app).get("/forecast?groupBy=9999");
+        expect(res.status).toBe(404);
+        expect(res.body.error).toBe("Custom field not found");
+    });
+
+    it("returns grouped buckets when groupBy references a valid custom field", async () => {
+        const field = await ds.manager.getRepository(CustomField).save(
+            Object.assign(new CustomField(), { name: "region", label: "Region", entity: "opportunity", type: "text" })
+        );
+        const stage = await createStage(ds);
+        const lead = await createLead(ds);
+        await request(app)
+            .post("/opportunities")
+            .send({ leadId: lead.id, stageId: stage.id, value: 5000, name: "Deal", customFields: { region: "East" } });
+        const res = await request(app).get(`/forecast?groupBy=${field.id}`);
+        expect(res.status).toBe(200);
+        expect(res.body.buckets[0]).toHaveProperty("groups");
+    });
 });
 
 // ─── Pipeline ─────────────────────────────────────────────────────────────────
@@ -435,5 +514,15 @@ describe("GET /pipeline", () => {
             totalValue: 5000,
             expectedValue: 2000,
         });
+    });
+
+    it("treats a null expectedValue as 0 in stage totals", async () => {
+        const stage = await createStage(ds, { conversionLikelihood: 0.5, expectedValue: 0 });
+        const lead = await createLead(ds);
+        const opp = Object.assign(new Opportunity(), { lead, stage, value: 5000, name: "Deal", expectedValue: null });
+        await ds.manager.getRepository(Opportunity).save(opp);
+        const res = await request(app).get("/pipeline");
+        expect(res.status).toBe(200);
+        expect(res.body.byStage[0].expectedValue).toBe(0);
     });
 });

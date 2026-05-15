@@ -1,67 +1,12 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { CustomField, ForecastBucket, ForecastReport } from "./types";
+import { ForecastBucket } from "@/types.ts";
+import { bucketAccent, fmt } from "./forecast-utils";
 
-function bucketAccent(label: string): string {
-    if (label === "Past") return "border-amber-400 bg-amber-50";
-    if (label === "Beyond 6 Months" || label === "No Close Date") return "border-gray-300 bg-gray-50";
-    return "border-blue-400 bg-white";
+interface ForecastMatrixProps {
+    buckets: ForecastBucket[];
+    grouped: boolean;
 }
 
-const fmt = (n: number) =>
-    n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-
-export const Forecast: React.FC = () => {
-    const [forecast, setForecast] = useState<ForecastReport | null>(null);
-    const [customFields, setCustomFields] = useState<CustomField[]>([]);
-    const [groupBy, setGroupBy] = useState<number | null>(null);
-
-    useEffect(() => {
-        axios.get<CustomField[]>("/api/custom-fields").then(res => {
-            setCustomFields(res.data.filter(f => f.entity === "opportunity"));
-        });
-    }, []);
-
-    useEffect(() => {
-        const url = groupBy ? `/api/forecast?groupBy=${groupBy}` : "/api/forecast";
-        axios.get<ForecastReport>(url).then(res => setForecast(res.data));
-    }, [groupBy]);
-
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Opportunities Forecast</h2>
-
-                {customFields.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Group by</span>
-                        <Pill label="None" active={groupBy === null} onClick={() => setGroupBy(null)} />
-                        {customFields.map(f => (
-                            <Pill key={f.id} label={f.label} active={groupBy === f.id} onClick={() => setGroupBy(f.id)} />
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {forecast && <ForecastMatrix buckets={forecast.buckets} grouped={groupBy !== null} />}
-        </div>
-    );
-};
-
-const Pill: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
-    <button
-        onClick={onClick}
-        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-            active
-                ? "bg-blue-500 text-white shadow-sm"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-        }`}
-    >
-        {label}
-    </button>
-);
-
-const ForecastMatrix: React.FC<{ buckets: ForecastBucket[]; grouped: boolean }> = ({ buckets, grouped }) => {
+export const ForecastMatrix: React.FC<ForecastMatrixProps> = ({ buckets, grouped }) => {
     const allValues = Array.from(
         new Set(buckets.flatMap(b => (b.groups ?? []).map(g => g.groupValue)))
     );

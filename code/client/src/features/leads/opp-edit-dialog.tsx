@@ -1,37 +1,43 @@
 import { useState, useEffect } from "react";
-import { Lead, Opportunity, Stage, CustomField } from "./types";
+import { Opportunity, Stage, CustomField } from "@/types.ts";
 import axios from "axios";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { extractApiError } from "./lib/utils";
+import { extractApiError } from "../../lib/utils";
 
-export const OppAddDialog: React.FC<{
-    lead: Lead;
+export const OppEditDialog: React.FC<{
+    opportunity: Opportunity;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onAdd: (created: Opportunity) => void;
-}> = ({ lead, open, onOpenChange, onAdd }) => {
-    const [name, setName] = useState("");
-    const [value, setValue] = useState(0);
-    const [stageId, setStageId] = useState("");
-    const [closeDate, setCloseDate] = useState("");
+    onUpdate: (updated: Opportunity) => void;
+}> = ({ opportunity, open, onOpenChange, onUpdate }) => {
+    const [name, setName] = useState(opportunity.name || "");
+    const [value, setValue] = useState(opportunity.value);
+    const [stageId, setStageId] = useState(`${opportunity.stage.id}`);
+    const [closeDate, setCloseDate] = useState(opportunity.closeDate || "");
     const [stages, setStages] = useState<Stage[]>([]);
     const [customFields, setCustomFields] = useState<CustomField[]>([]);
-    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>(opportunity.customFields || {});
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        Promise.all([
-            axios.get("/api/stages"),
-            axios.get("/api/custom-fields"),
-        ]).then(([stagesRes, fieldsRes]) => {
-            const fetchedStages: Stage[] = stagesRes.data;
-            setStages(fetchedStages);
-            if (fetchedStages.length > 0) setStageId(`${fetchedStages[0].id}`);
-            setCustomFields(fieldsRes.data.filter((f: CustomField) => f.entity === "opportunity"));
-        }).catch(() => setError("Failed to load form data"));
-    }, []);
+        if (open) {
+            setName(opportunity.name || "");
+            setValue(opportunity.value);
+            setStageId(`${opportunity.stage.id}`);
+            setCloseDate(opportunity.closeDate || "");
+            setCustomFieldValues(opportunity.customFields || {});
+            setError("");
+            Promise.all([
+                axios.get("/api/stages"),
+                axios.get("/api/custom-fields"),
+            ]).then(([stagesRes, fieldsRes]) => {
+                setStages(stagesRes.data);
+                setCustomFields(fieldsRes.data.filter((f: CustomField) => f.entity === "opportunity"));
+            }).catch(() => setError("Failed to load form data"));
+        }
+    }, [open, opportunity]);
 
     const handleOpenChange = (next: boolean) => {
         if (!next) setError("");
@@ -43,15 +49,14 @@ export const OppAddDialog: React.FC<{
         setLoading(true);
         setError("");
         try {
-            const res = await axios.post("/api/opportunities", {
-                leadId: lead.id,
-                stageId: parseInt(stageId),
+            const res = await axios.put(`/api/opportunities/${opportunity.id}`, {
                 name,
                 value,
+                stageId: parseInt(stageId),
                 closeDate: closeDate || null,
                 customFields: customFieldValues,
             });
-            onAdd(res.data);
+            onUpdate(res.data);
             onOpenChange(false);
         } catch (err) {
             setError(extractApiError(err));
@@ -63,17 +68,14 @@ export const OppAddDialog: React.FC<{
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Add Opportunity</DialogTitle>
-                    <p className="text-sm text-muted-foreground">
-                        For {lead.firstName} {lead.lastName}
-                    </p>
+                    <DialogTitle>Edit Opportunity</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {error && <p className="text-red-500 text-sm">{error}</p>}
                     <div>
-                        <label htmlFor="add-opp-name" className="block text-sm text-muted-foreground mb-1">Name</label>
+                        <label htmlFor="opp-name" className="block text-sm text-muted-foreground mb-1">Name</label>
                         <input
-                            id="add-opp-name"
+                            id="opp-name"
                             type="text"
                             value={name}
                             onChange={e => setName(e.target.value)}
@@ -81,9 +83,9 @@ export const OppAddDialog: React.FC<{
                         />
                     </div>
                     <div>
-                        <label htmlFor="add-opp-value" className="block text-sm text-muted-foreground mb-1">Value</label>
+                        <label htmlFor="opp-value" className="block text-sm text-muted-foreground mb-1">Value</label>
                         <input
-                            id="add-opp-value"
+                            id="opp-value"
                             type="number"
                             value={value}
                             onChange={e => setValue(parseFloat(e.target.value) || 0)}
@@ -93,9 +95,9 @@ export const OppAddDialog: React.FC<{
                         />
                     </div>
                     <div>
-                        <label htmlFor="add-opp-stage" className="block text-sm text-muted-foreground mb-1">Stage</label>
+                        <label htmlFor="opp-stage" className="block text-sm text-muted-foreground mb-1">Stage</label>
                         <select
-                            id="add-opp-stage"
+                            id="opp-stage"
                             value={stageId}
                             onChange={e => setStageId(e.target.value)}
                             className="block w-full p-2 border border-gray-300 rounded"
@@ -106,9 +108,9 @@ export const OppAddDialog: React.FC<{
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="add-opp-close-date" className="block text-sm text-muted-foreground mb-1">Close Date</label>
+                        <label htmlFor="opp-close-date" className="block text-sm text-muted-foreground mb-1">Close Date</label>
                         <input
-                            id="add-opp-close-date"
+                            id="opp-close-date"
                             type="date"
                             value={closeDate}
                             onChange={e => setCloseDate(e.target.value)}
@@ -117,9 +119,9 @@ export const OppAddDialog: React.FC<{
                     </div>
                     {customFields.map(field => (
                         <div key={field.id}>
-                            <label htmlFor={`add-opp-custom-${field.name}`} className="block text-sm text-muted-foreground mb-1">{field.label}</label>
+                            <label htmlFor={`opp-custom-${field.name}`} className="block text-sm text-muted-foreground mb-1">{field.label}</label>
                             <input
-                                id={`add-opp-custom-${field.name}`}
+                                id={`opp-custom-${field.name}`}
                                 type="text"
                                 value={customFieldValues[field.name] || ""}
                                 onChange={e =>
@@ -134,7 +136,7 @@ export const OppAddDialog: React.FC<{
                     ))}
                     <DialogFooter>
                         <Button type="submit" disabled={loading} className="w-full">
-                            Add Opportunity
+                            Update Opportunity
                         </Button>
                     </DialogFooter>
                 </form>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { CustomField } from "./types";
+import { CustomField } from "@/types.ts";
 
 export const AddLead: React.FC<{ triggerRefresh?: number; onSuccess?: () => void }> = ({ triggerRefresh = 0, onSuccess }) => {
     const [firstName, setFirstName] = useState("");

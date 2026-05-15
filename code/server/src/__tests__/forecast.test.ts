@@ -65,6 +65,34 @@ describe("getBucketLabels", () => {
     });
 });
 
+describe("buildForecastBuckets branch coverage", () => {
+    it("uses 0 when expectedValue is absent in a non-grouped bucket", () => {
+        const opps = [{ closeDate: "2026-05-10" }];
+        const buckets = buildForecastBuckets(opps, TODAY) as { label: string; totalExpectedValue: number }[];
+        const may = buckets.find(b => b.label === "May 2026")!;
+        expect(may.totalExpectedValue).toBe(0);
+    });
+
+    it("uses 0 when expectedValue is absent in a grouped bucket", () => {
+        const opps = [{ closeDate: "2026-05-10", customFields: { region: "East" } }];
+        const buckets = buildForecastBuckets(opps, TODAY, { name: "region" }) as { label: string; groups: { groupValue: string; totalExpectedValue: number }[] }[];
+        const may = buckets.find(b => b.label === "May 2026")!;
+        expect(may.groups[0].totalExpectedValue).toBe(0);
+    });
+
+    it("accumulates totals when multiple opportunities share the same group key", () => {
+        const opps = [
+            { closeDate: "2026-05-10", expectedValue: 100, customFields: { region: "East" } },
+            { closeDate: "2026-05-20", expectedValue: 200, customFields: { region: "East" } },
+        ];
+        const buckets = buildForecastBuckets(opps, TODAY, { name: "region" }) as { label: string; groups: { groupValue: string; count: number; totalExpectedValue: number }[] }[];
+        const may = buckets.find(b => b.label === "May 2026")!;
+        const east = may.groups.find(g => g.groupValue === "East")!;
+        expect(east.count).toBe(2);
+        expect(east.totalExpectedValue).toBe(300);
+    });
+});
+
 describe("buildForecastBuckets without groupBy", () => {
     let ds: DataSource;
 

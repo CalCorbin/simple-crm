@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { ManageStages } from "../manage-stages";
-import { Stage } from "../types";
+import { Stage } from "../../../types";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);
@@ -120,15 +120,17 @@ describe("ManageStages", () => {
         expect(likelihoodInput).toHaveValue(0.75);
     });
 
-    it("updates the status select in the add form", () => {
+    it("updates the status select in the add form", async () => {
         render(<ManageStages />);
+        await screen.findByText("No stages");
         const statusSelect = screen.getByRole("combobox");
         fireEvent.change(statusSelect, { target: { value: "lost" } });
         expect(statusSelect).toHaveValue("lost");
     });
 
-    it("updates the likelihood slider in the add form", () => {
+    it("updates the likelihood slider in the add form", async () => {
         render(<ManageStages />);
+        await screen.findByText("No stages");
         const slider = screen.getByRole("slider");
         fireEvent.change(slider, { target: { value: "0.75" } });
         expect(slider).toHaveValue("0.75");

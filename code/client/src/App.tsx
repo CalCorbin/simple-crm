@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Leads } from "./leads";
-import { Pipeline } from "./pipeline";
-import { Forecast } from "./forecast";
-import { ManageFields } from "./manage-fields";
-import { ManageStages } from "./manage-stages";
-import { ManageSettings } from "./manage-settings";
+import { Leads } from "./features/leads/leads";
+import { Pipeline } from "./features/pipeline/pipeline";
+import { Forecast } from "./features/forecast/forecast";
+import { ManageFields } from "./features/settings/manage-fields";
+import { ManageStages } from "./features/settings/manage-stages";
+import { ManageSettings } from "./features/settings/manage-settings";
 
 type Page = "home" | "pipeline" | "forecast" | "settings";
 

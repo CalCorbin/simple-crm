@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { LeadOppPanel } from "../lead-opps-panel";
-import { Lead, Opportunity } from "../types";
+import { Lead, Opportunity } from "../../../types";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);
@@ -79,7 +79,7 @@ describe("LeadOppPanel", () => {
         mockedAxios.get.mockResolvedValue({ data: [opp] });
         renderPanel();
         fireEvent.click(await screen.findByText("Edit"));
-        expect(screen.getByText("Edit Opportunity")).toBeInTheDocument();
+        expect(await screen.findByText("Edit Opportunity")).toBeInTheDocument();
     });
 
     it("opens the add dialog when Add Opportunity is clicked", async () => {

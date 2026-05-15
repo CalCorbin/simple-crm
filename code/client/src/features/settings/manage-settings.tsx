@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { AppSetting } from "./types";
+import { AppSetting } from "@/types.ts";
 
 export const ManageSettings: React.FC = () => {
     const [settings, setSettings] = useState<AppSetting[]>([]);
