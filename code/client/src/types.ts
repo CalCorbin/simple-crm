@@ -51,3 +51,20 @@ export interface PipelineReport {
         expectedValue: number;
     }[];
 }
+
+export interface ForecastGroup {
+    groupValue: string;
+    count: number;
+    totalExpectedValue: number;
+}
+
+export interface ForecastBucket {
+    label: string;
+    count?: number;
+    totalExpectedValue?: number;
+    groups?: ForecastGroup[];
+}
+
+export interface ForecastReport {
+    buckets: ForecastBucket[];
+}

@@ -11,11 +11,12 @@ beforeEach(() => {
 });
 
 describe("App", () => {
-    it("renders the nav with all three pages", async () => {
+    it("renders the nav with all four pages", async () => {
         render(<App />);
         expect(screen.getByText("SimpleCRM")).toBeInTheDocument();
         expect(screen.getByText("Home")).toBeInTheDocument();
         expect(screen.getByText("Pipeline")).toBeInTheDocument();
+        expect(screen.getByText("Forecast")).toBeInTheDocument();
         expect(screen.getByText("Settings")).toBeInTheDocument();
     });
 
@@ -45,6 +46,69 @@ describe("App", () => {
         fireEvent.click(screen.getByText("Settings"));
         fireEvent.click(screen.getByText("Home"));
         expect(await screen.findByText("Leads")).toBeInTheDocument();
+    });
+
+    it("shows the forecast page when Forecast is clicked", async () => {
+        mockedAxios.get.mockImplementation((url: string) => {
+            if (url === "/api/forecast") return Promise.resolve({ data: { buckets: [] } });
+            return Promise.resolve({ data: [] });
+        });
+        render(<App />);
+        fireEvent.click(screen.getByText("Forecast"));
+        expect(await screen.findByText("Opportunities Forecast")).toBeInTheDocument();
+    });
+
+    it("renders a matrix table with Bucket and Total columns on the forecast page", async () => {
+        mockedAxios.get.mockImplementation((url: string) => {
+            if (url === "/api/forecast") return Promise.resolve({ data: {
+                buckets: [
+                    { label: "Past", count: 2, totalExpectedValue: 500 },
+                    { label: "May 2026", count: 1, totalExpectedValue: 200 },
+                ],
+            }});
+            return Promise.resolve({ data: [] });
+        });
+        render(<App />);
+        fireEvent.click(screen.getByText("Forecast"));
+        expect(await screen.findByText("Past")).toBeInTheDocument();
+        expect(screen.getByText("May 2026")).toBeInTheDocument();
+        expect(screen.getByText("Total")).toBeInTheDocument();
+    });
+
+    it("shows group-by pills for opportunity-scoped custom fields", async () => {
+        mockedAxios.get.mockImplementation((url: string) => {
+            if (url === "/api/custom-fields") return Promise.resolve({ data: [
+                { id: 1, name: "region", label: "Region", entity: "opportunity", type: "text" },
+                { id: 2, name: "source", label: "Source", entity: "lead", type: "text" },
+            ]});
+            if (url === "/api/forecast") return Promise.resolve({ data: { buckets: [] } });
+            return Promise.resolve({ data: [] });
+        });
+        render(<App />);
+        fireEvent.click(screen.getByText("Forecast"));
+        expect(await screen.findByText("Region")).toBeInTheDocument();
+        expect(screen.queryByText("Source")).not.toBeInTheDocument();
+    });
+
+    it("fetches grouped forecast data and renders group columns when a pill is selected", async () => {
+        mockedAxios.get.mockImplementation((url: string) => {
+            if (url === "/api/custom-fields") return Promise.resolve({ data: [
+                { id: 1, name: "region", label: "Region", entity: "opportunity", type: "text" },
+            ]});
+            if (url === "/api/forecast") return Promise.resolve({ data: { buckets: [
+                { label: "Past", count: 1, totalExpectedValue: 300 },
+            ]}});
+            if (url === "/api/forecast?groupBy=1") return Promise.resolve({ data: { buckets: [
+                { label: "Past", groups: [
+                    { groupValue: "East", count: 1, totalExpectedValue: 300 },
+                ]},
+            ]}});
+            return Promise.resolve({ data: [] });
+        });
+        render(<App />);
+        fireEvent.click(screen.getByText("Forecast"));
+        fireEvent.click(await screen.findByText("Region"));
+        expect(await screen.findByText("East")).toBeInTheDocument();
     });
 
     it("Add Lead modal picks up a new custom field after one is added in Settings", async () => {
