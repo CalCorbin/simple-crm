@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AddLead } from "./add-lead";
 import { Leads } from "./leads";
 import { Pipeline } from "./pipeline";
 import { ManageFields } from "./manage-fields";
@@ -37,12 +36,7 @@ export const App: React.FC = () => {
                 </div>
             </div>
 
-            {currentPage === "home" && (
-                <>
-                    <Leads refreshTrigger={fieldsRefresh} />
-                    <AddLead triggerRefresh={fieldsRefresh} />
-                </>
-            )}
+            {currentPage === "home" && <Leads refreshTrigger={fieldsRefresh} />}
 
             {currentPage === "pipeline" && <Pipeline />}
 

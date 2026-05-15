@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Opportunity } from "./types";
+import { Lead, Opportunity } from "./types";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "./lib/utils";
 import { OppEditDialog } from "./opp-edit-dialog";
+import { OppAddDialog } from "./opp-add-dialog";
 
 const formatDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split("-").map(Number);
     return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 };
 
-export const LeadOppPanel: React.FC<{ leadId: number }> = ({ leadId }) => {
+export const LeadOppPanel: React.FC<{ lead: Lead }> = ({ lead }) => {
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [editingOpp, setEditingOpp] = useState<Opportunity | null>(null);
+    const [addingOpp, setAddingOpp] = useState(false);
 
     useEffect(() => {
         axios.get("/api/opportunities").then(res => {
-            setOpportunities(res.data.filter((opp: Opportunity) => opp.lead.id === leadId));
+            setOpportunities(res.data.filter((opp: Opportunity) => opp.lead.id === lead.id));
         });
-    }, [leadId]);
+    }, [lead.id]);
 
     const deleteOpportunity = async (oppId: number) => {
         await axios.delete(`/api/opportunities/${oppId}`);
@@ -30,12 +32,19 @@ export const LeadOppPanel: React.FC<{ leadId: number }> = ({ leadId }) => {
         setOpportunities(prev => prev.map(o => o.id === updated.id ? updated : o));
     };
 
+    const handleOppAdded = (created: Opportunity) => {
+        setOpportunities(prev => [...prev, created]);
+    };
+
     return (
         <>
             <TableRow>
                 <TableCell colSpan={5} className="bg-muted/30 p-4">
                     <div className="space-y-2">
-                        <h3 className="font-semibold text-sm">Opportunities</h3>
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-sm">Opportunities</h3>
+                            <Button size="sm" onClick={() => setAddingOpp(true)}>Add Opportunity</Button>
+                        </div>
                         {opportunities.length === 0 ? (
                             <p className="text-sm text-muted-foreground">No opportunities</p>
                         ) : (
@@ -79,6 +88,14 @@ export const LeadOppPanel: React.FC<{ leadId: number }> = ({ leadId }) => {
                     open={true}
                     onOpenChange={(open) => { if (!open) setEditingOpp(null); }}
                     onUpdate={handleOppUpdated}
+                />
+            )}
+            {addingOpp && (
+                <OppAddDialog
+                    lead={lead}
+                    open={true}
+                    onOpenChange={(open) => { if (!open) setAddingOpp(false); }}
+                    onAdd={handleOppAdded}
                 />
             )}
         </>

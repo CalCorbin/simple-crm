@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { CustomField } from "./types";
 
-export const AddLead: React.FC<{ triggerRefresh?: number }> = ({ triggerRefresh = 0 }) => {
+export const AddLead: React.FC<{ triggerRefresh?: number; onSuccess?: () => void }> = ({ triggerRefresh = 0, onSuccess }) => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [age, setAge] = useState("");
@@ -34,13 +34,17 @@ export const AddLead: React.FC<{ triggerRefresh?: number }> = ({ triggerRefresh 
                 phoneNumber,
                 customFields: customFieldValues,
             });
-            setSuccess(true);
-            setFirstName("");
-            setLastName("");
-            setAge("");
-            setPhoneNumber("");
-            setCustomFieldValues({});
-            setTimeout(() => setSuccess(false), 3000);
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                setSuccess(true);
+                setFirstName("");
+                setLastName("");
+                setAge("");
+                setPhoneNumber("");
+                setCustomFieldValues({});
+                setTimeout(() => setSuccess(false), 3000);
+            }
         } catch (error) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setError((error as any).response.data);
@@ -49,52 +53,65 @@ export const AddLead: React.FC<{ triggerRefresh?: number }> = ({ triggerRefresh 
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 p-4 rounded bg-gray-100 w-96">
-            <h2 className="text-xl font-fold">Add Lead</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
             {error && <p className="text-red-500">{error}</p>}
             {success && <p className="text-green-500">Lead added successfully</p>}
-            <input
-                type="text"
-                placeholder="First Name"
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                className="block w-full p-2 border border-gray-300 rounded"
-            />
-            <input
-                type="text"
-                placeholder="Last Name"
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-                className="block w-full p-2 border border-gray-300 rounded"
-            />
-            <input
-                type="text"
-                placeholder="Age"
-                value={age}
-                onChange={e => setAge(e.target.value)}
-                className="block w-full p-2 border border-gray-300 rounded"
-            />
-            <input
-                type="text"
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChange={e => setPhoneNumber(e.target.value)}
-                className="block w-full p-2 border border-gray-300 rounded"
-            />
-            {customFields.map(field => (
+            <div>
+                <label htmlFor="add-lead-first-name" className="block text-sm text-muted-foreground mb-1">First Name</label>
                 <input
-                    key={field.id}
+                    id="add-lead-first-name"
                     type="text"
-                    placeholder={field.label}
-                    value={customFieldValues[field.name] || ""}
-                    onChange={e =>
-                        setCustomFieldValues({
-                            ...customFieldValues,
-                            [field.name]: e.target.value,
-                        })
-                    }
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
                     className="block w-full p-2 border border-gray-300 rounded"
                 />
+            </div>
+            <div>
+                <label htmlFor="add-lead-last-name" className="block text-sm text-muted-foreground mb-1">Last Name</label>
+                <input
+                    id="add-lead-last-name"
+                    type="text"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    className="block w-full p-2 border border-gray-300 rounded"
+                />
+            </div>
+            <div>
+                <label htmlFor="add-lead-age" className="block text-sm text-muted-foreground mb-1">Age</label>
+                <input
+                    id="add-lead-age"
+                    type="text"
+                    value={age}
+                    onChange={e => setAge(e.target.value)}
+                    className="block w-full p-2 border border-gray-300 rounded"
+                />
+            </div>
+            <div>
+                <label htmlFor="add-lead-phone" className="block text-sm text-muted-foreground mb-1">Phone Number</label>
+                <input
+                    id="add-lead-phone"
+                    type="text"
+                    value={phoneNumber}
+                    onChange={e => setPhoneNumber(e.target.value)}
+                    className="block w-full p-2 border border-gray-300 rounded"
+                />
+            </div>
+            {customFields.map(field => (
+                <div key={field.id}>
+                    <label htmlFor={`add-lead-custom-${field.name}`} className="block text-sm text-muted-foreground mb-1">{field.label}</label>
+                    <input
+                        id={`add-lead-custom-${field.name}`}
+                        type="text"
+                        value={customFieldValues[field.name] || ""}
+                        onChange={e =>
+                            setCustomFieldValues({
+                                ...customFieldValues,
+                                [field.name]: e.target.value,
+                            })
+                        }
+                        className="block w-full p-2 border border-gray-300 rounded"
+                    />
+                </div>
             ))}
             <button type="submit" disabled={loading} className="block w-full p-2 bg-blue-500 text-white rounded">
                 Add Lead

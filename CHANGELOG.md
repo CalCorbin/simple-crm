@@ -4,6 +4,48 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-14 (add opportunity UX + test coverage)
+
+### Added
+- **`opp-add-dialog.tsx`**: modal for creating a new opportunity for a lead; shows "For [First] [Last]" in the header so the user always knows which lead they're adding to; labeled fields for name, value, stage (select populated from `GET /api/stages`, defaults to first stage), close date, and any opportunity-scoped custom fields; resets form state on each open; calls `onAdd(res.data)` with the server response so the panel list updates without refetching
+- **`opp-add-dialog.test.tsx`**: 15 tests — lead name display, stage load and default selection, stage selector change, name/value/close-date/custom-field submission, `closeDate: null` when field is empty, `onAdd`/`onOpenChange` callbacks, three error paths (`data.error`, raw string data, fallback "An error occurred"), custom field filter (opportunity only), close button clears error, form reset on reopen
+- **Add Opportunity button** in the `LeadOppPanel` header; clicking opens `OppAddDialog`; on save the new opportunity appears in the list immediately via local state append
+
+### Changed
+- **`lead-opps-panel.tsx`**: now accepts a full `Lead` object instead of just `leadId` so the add dialog can display the lead's name; "Opportunities" heading row converted to a flex row with the heading on the left and the Add Opportunity button on the right
+- **`lead-row.tsx`**: passes `lead` instead of `leadId` to `LeadOppPanel`
+- **`lead-opps-panel.test.tsx`**: updated `renderPanel` to pass `lead={lead}`; added tests for add-dialog open and successful create flow
+- **`opp-edit-dialog.test.tsx`**: four new tests covering previously missing branches — empty-name pre-fill, `parseFloat` NaN fallback to 0, raw string error response, no-data fallback error message
+
+### Coverage (client)
+| Metric | Before | After |
+|---|---|---|
+| Statements | 95.1% | 98.91% |
+| Branches | 80.71% | 90.71% |
+| Functions | 91.93% | 99.19% |
+| Lines | 96.8% | 100% |
+
+---
+
+## 2026-05-14 (add lead modal)
+
+### Added
+- **`add-lead-dialog.tsx`**: new component wrapping `AddLead` in a Dialog modal; conditionally renders the form only when open so state resets on each open; accepts `open`, `onOpenChange`, `onSuccess`, and `refreshTrigger` props
+- **Add Lead button** in the `Leads` header row opens the modal; on successful submit the modal closes and the leads list refreshes
+- Labels (`<label htmlFor>`) added to all inputs in `AddLead`; placeholders removed
+
+### Changed
+- **`add-lead.tsx`**: added `onSuccess` prop — when provided, calls it on success (modal path) instead of showing an inline success message (standalone path); removed card container styling and title (now supplied by the dialog)
+- **`leads.tsx`**: replaced standalone `<h2>` heading with a flex header row containing the title and the Add Lead button; manages `addLeadOpen` state; composes `AddLeadDialog`
+- **`App.tsx`**: removed standalone `<AddLead>` from the home page; add-lead UX now lives entirely within `<Leads>`
+- Tests updated: `getByPlaceholderText` → `getByLabelText` throughout `add-lead.test.tsx` and `App.test.tsx`; App integration test updated to open the modal before asserting on the custom-field input
+
+### Tests added
+- `"calls onSuccess instead of showing an inline message when the prop is provided"` — covers the `onSuccess` branch in `AddLead`
+- `"closes the Add Lead modal and refreshes leads after a lead is created"` — covers `handleLeadAdded` in `Leads`; uses `within(dialog)` to disambiguate the two "Add Lead" buttons in the DOM
+
+---
+
 ## 2026-05-14 (opportunity edit modal)
 
 ### Added

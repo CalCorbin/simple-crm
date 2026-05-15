@@ -154,6 +154,43 @@ describe("OppEditDialog", () => {
         );
     });
 
+    it("pre-fills with an empty name when the opportunity has no name", async () => {
+        const unnamed = { ...opp, name: undefined };
+        render(<OppEditDialog opportunity={unnamed} open={true} onOpenChange={vi.fn()} onUpdate={vi.fn()} />);
+        expect(await screen.findByLabelText("Name")).toHaveValue("");
+    });
+
+    it("falls back to 0 when a non-numeric value is entered in the value field", async () => {
+        renderDialog();
+        fireEvent.change(screen.getByLabelText("Value"), { target: { value: "abc" } });
+        fireEvent.click(await screen.findByText("Update Opportunity"));
+        await waitFor(() =>
+            expect(mockedAxios.put).toHaveBeenCalledWith("/api/opportunities/10", expect.objectContaining({
+                value: 0,
+            }))
+        );
+    });
+
+    it("shows raw response data as the error when there is no data.error property", async () => {
+        mockedAxios.put.mockRejectedValue({ response: { data: "Bad request" } });
+        renderDialog();
+        fireEvent.click(await screen.findByText("Update Opportunity"));
+        expect(await screen.findByText("Bad request")).toBeInTheDocument();
+    });
+
+    it("shows a fallback error message when the error has no response data", async () => {
+        mockedAxios.put.mockRejectedValue({});
+        renderDialog();
+        fireEvent.click(await screen.findByText("Update Opportunity"));
+        expect(await screen.findByText("An error occurred")).toBeInTheDocument();
+    });
+
+    it("shows an error when stages or custom fields fail to load", async () => {
+        mockedAxios.get.mockRejectedValue(new Error("Network error"));
+        renderDialog();
+        expect(await screen.findByText("Failed to load form data")).toBeInTheDocument();
+    });
+
     it("clears the error and calls onOpenChange(false) when closed via the close button", async () => {
         mockedAxios.put.mockRejectedValue({ response: { data: { error: "Some error" } } });
         const { onOpenChange } = renderDialog();

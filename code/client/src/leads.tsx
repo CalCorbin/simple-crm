@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { Lead, Opportunity } from "./types";
 import { LeadRow } from "./lead-row";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { AddLeadDialog } from "./add-lead-dialog";
 
 export const Leads: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 0 }) => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [oppCounts, setOppCounts] = useState<Record<number, number>>({});
+    const [addLeadOpen, setAddLeadOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -25,9 +28,23 @@ export const Leads: React.FC<{ refreshTrigger?: number }> = ({ refreshTrigger = 
         setOppCounts(counts);
     };
 
+    const handleLeadAdded = () => {
+        setAddLeadOpen(false);
+        fetchData();
+    };
+
     return (
         <div className="w-full">
-            <h2 className="text-xl font-bold mb-4">Leads</h2>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Leads</h2>
+                <Button onClick={() => setAddLeadOpen(true)}>Add Lead</Button>
+            </div>
+            <AddLeadDialog
+                open={addLeadOpen}
+                onOpenChange={setAddLeadOpen}
+                onSuccess={handleLeadAdded}
+                refreshTrigger={refreshTrigger}
+            />
             <Table>
                 <TableHeader>
                     <TableRow>

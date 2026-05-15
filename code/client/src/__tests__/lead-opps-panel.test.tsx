@@ -20,7 +20,7 @@ const opp: Opportunity = {
 function renderPanel() {
     render(
         <table><tbody>
-            <LeadOppPanel leadId={lead.id} />
+            <LeadOppPanel lead={lead} />
         </tbody></table>
     );
 }
@@ -80,6 +80,24 @@ describe("LeadOppPanel", () => {
         renderPanel();
         fireEvent.click(await screen.findByText("Edit"));
         expect(screen.getByText("Edit Opportunity")).toBeInTheDocument();
+    });
+
+    it("opens the add dialog when Add Opportunity is clicked", async () => {
+        mockedAxios.get.mockResolvedValue({ data: [] });
+        renderPanel();
+        fireEvent.click(await screen.findByText("Add Opportunity"));
+        expect(await screen.findByText("For Jane Doe")).toBeInTheDocument();
+    });
+
+    it("adds a new opportunity to the list after a successful create", async () => {
+        mockedAxios.get.mockResolvedValue({ data: [] });
+        mockedAxios.post.mockResolvedValue({ data: opp });
+        renderPanel();
+        fireEvent.click(await screen.findByText("Add Opportunity"));
+        await screen.findByText("For Jane Doe");
+        const submitButton = screen.getByRole("button", { name: "Add Opportunity" });
+        fireEvent.click(submitButton);
+        expect(await screen.findByText("Deal A")).toBeInTheDocument();
     });
 
     it("reflects updated opportunity name in the list after a successful edit", async () => {

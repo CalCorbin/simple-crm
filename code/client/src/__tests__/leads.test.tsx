@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { Leads } from "../leads";
@@ -12,6 +12,11 @@ beforeEach(() => {
 });
 
 describe("Leads", () => {
+    it("renders an Add Lead button", () => {
+        render(<Leads />);
+        expect(screen.getByRole("button", { name: "Add Lead" })).toBeInTheDocument();
+    });
+
     it("renders the table column headers", () => {
         render(<Leads />);
         expect(screen.getByText("First Name")).toBeInTheDocument();
@@ -32,6 +37,22 @@ describe("Leads", () => {
         render(<Leads />);
         expect(await screen.findByText("Alice")).toBeInTheDocument();
         expect(await screen.findByText("Bob")).toBeInTheDocument();
+    });
+
+    it("closes the Add Lead modal and refreshes leads after a lead is created", async () => {
+        const newLead: Lead = { id: 99, firstName: "Carol", lastName: "White", age: 28, phoneNumber: "333" };
+        mockedAxios.post.mockResolvedValue({});
+        mockedAxios.get.mockImplementation((url: string) => {
+            if (url === "/api/leads") return Promise.resolve({ data: [newLead] });
+            return Promise.resolve({ data: [] });
+        });
+        render(<Leads />);
+        fireEvent.click(screen.getByRole("button", { name: "Add Lead" }));
+        const dialog = await screen.findByRole("dialog");
+        expect(within(dialog).getByLabelText("First Name")).toBeInTheDocument();
+        fireEvent.click(within(dialog).getByRole("button", { name: "Add Lead" }));
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(await screen.findByText("Carol")).toBeInTheDocument();
     });
 
     it("shows the opportunity count badge on rows with opportunities", async () => {
