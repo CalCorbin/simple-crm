@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { PipelineReport } from "../../types";
+import { PipelineReport } from "@/types.ts";
 import { formatCurrency } from "../../lib/utils";
 
 export const Pipeline: React.FC = () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Lead, CustomField } from "../../types";
+import { Lead, CustomField } from "@/types.ts";
 import axios from "axios";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

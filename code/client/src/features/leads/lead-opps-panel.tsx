@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Lead, Opportunity } from "../../types";
+import { Lead, Opportunity } from "@/types.ts";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";

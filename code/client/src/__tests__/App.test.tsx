@@ -13,16 +13,16 @@ beforeEach(() => {
 describe("App", () => {
     it("renders the nav with all four pages", async () => {
         render(<App />);
-        expect(screen.getByText("SimpleCRM")).toBeInTheDocument();
+        expect(await screen.findByText("SimpleCRM")).toBeInTheDocument();
         expect(screen.getByText("Home")).toBeInTheDocument();
         expect(screen.getByText("Pipeline")).toBeInTheDocument();
         expect(screen.getByText("Forecast")).toBeInTheDocument();
         expect(screen.getByText("Settings")).toBeInTheDocument();
     });
 
-    it("shows the home page by default", () => {
+    it("shows the home page by default", async () => {
         render(<App />);
-        expect(screen.getByText("Home").className).toContain("bg-blue-500");
+        expect((await screen.findByText("Home")).className).toContain("bg-blue-500");
     });
 
     it("shows the pipeline page when Pipeline is clicked", async () => {

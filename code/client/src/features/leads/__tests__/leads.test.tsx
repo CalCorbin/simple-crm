@@ -12,14 +12,14 @@ beforeEach(() => {
 });
 
 describe("Leads", () => {
-    it("renders an Add Lead button", () => {
+    it("renders an Add Lead button", async () => {
         render(<Leads />);
-        expect(screen.getByRole("button", { name: "Add Lead" })).toBeInTheDocument();
+        expect(await screen.findByRole("button", { name: "Add Lead" })).toBeInTheDocument();
     });
 
-    it("renders the table column headers", () => {
+    it("renders the table column headers", async () => {
         render(<Leads />);
-        expect(screen.getByText("First Name")).toBeInTheDocument();
+        expect(await screen.findByText("First Name")).toBeInTheDocument();
         expect(screen.getByText("Last Name")).toBeInTheDocument();
         expect(screen.getByText("Age")).toBeInTheDocument();
         expect(screen.getByText("Phone Number")).toBeInTheDocument();

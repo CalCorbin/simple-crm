@@ -11,9 +11,9 @@ beforeEach(() => {
 });
 
 describe("AddLead", () => {
-    it("renders the four standard input fields", () => {
+    it("renders the four standard input fields", async () => {
         render(<AddLead />);
-        expect(screen.getByLabelText("First Name")).toBeInTheDocument();
+        expect(await screen.findByLabelText("First Name")).toBeInTheDocument();
         expect(screen.getByLabelText("Last Name")).toBeInTheDocument();
         expect(screen.getByLabelText("Age")).toBeInTheDocument();
         expect(screen.getByLabelText("Phone Number")).toBeInTheDocument();

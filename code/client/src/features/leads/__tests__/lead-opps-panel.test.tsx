@@ -79,7 +79,7 @@ describe("LeadOppPanel", () => {
         mockedAxios.get.mockResolvedValue({ data: [opp] });
         renderPanel();
         fireEvent.click(await screen.findByText("Edit"));
-        expect(screen.getByText("Edit Opportunity")).toBeInTheDocument();
+        expect(await screen.findByText("Edit Opportunity")).toBeInTheDocument();
     });
 
     it("opens the add dialog when Add Opportunity is clicked", async () => {
