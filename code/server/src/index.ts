@@ -285,8 +285,7 @@ const run = async () => {
 };
 /* v8 ignore stop */
 
-// Guard prevents run() from firing when this module is imported by tests.
+/* v8 ignore next 3 -- only fires when executed directly, not via import */
 if (require.main === module) {
-    /* v8 ignore next -- only fires when executed directly, not via import */
     run();
 }

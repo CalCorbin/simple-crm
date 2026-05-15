@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-15 (server test coverage — 100%)
+
+### Tests
+- **`api.test.ts`**: 11 new tests reaching 100% branch coverage on the server
+  - `GET /forecast` — no groupBy, invalid `groupBy` (404), valid `groupBy` returning grouped buckets
+  - `PUT /opportunities/:id` — `closeDate` field update; same-stage update when `conversionLikelihood` is 0 (exercises `|| 0` guard on `Stage.expectedValue`)
+  - `DELETE /opportunities/:id` — non-existent ID (covers `if (opp)` false branch); zero-expectedValue opportunity (exercises `|| 0` guards in delete path)
+  - `GET /pipeline` — null `expectedValue` in DB (exercises `?? 0` guard in stage totals)
+- **`forecast.test.ts`**: 3 new unit tests covering remaining `buildForecastBuckets` branches — absent `expectedValue` in grouped and non-grouped buckets; two opportunities sharing the same group key (exercises the map-accumulation truthy path on `groupMap.get`)
+
+### Changed
+- `index.ts`: `/* v8 ignore next */` comment moved to wrap the entire `if (require.main === module)` block rather than just the `run()` call inside it, eliminating the uncovered true-branch on that guard
+
+### Coverage (server)
+| Metric | Before | After |
+|---|---|---|
+| Statements | 94.09% | 100% |
+| Branches | 86.23% | 100% |
+| Functions | 95.45% | 100% |
+| Lines | 94.73% | 100% |
+
+---
+
 ## 2026-05-15 (forecast component modularization)
 
 ### Changed
