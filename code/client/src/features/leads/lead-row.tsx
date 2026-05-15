@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lead } from "./types";
+import { Lead } from "../../types";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";

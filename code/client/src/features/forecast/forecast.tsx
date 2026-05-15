@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { CustomField, ForecastBucket, ForecastReport } from "./types";
+import { CustomField, ForecastBucket, ForecastReport } from "../../types";
 
 function bucketAccent(label: string): string {
     if (label === "Past") return "border-amber-400 bg-amber-50";

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Lead, Opportunity } from "./types";
+import { Lead, Opportunity } from "../../types";
 import { LeadRow } from "./lead-row";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";

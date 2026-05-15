@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Lead, Opportunity } from "./types";
+import { Lead, Opportunity } from "../../types";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { formatCurrency } from "./lib/utils";
+import { formatCurrency } from "../../lib/utils";
 import { OppEditDialog } from "./opp-edit-dialog";
 import { OppAddDialog } from "./opp-add-dialog";
 

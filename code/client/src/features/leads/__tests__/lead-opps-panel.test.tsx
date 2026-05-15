@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { LeadOppPanel } from "../lead-opps-panel";
-import { Lead, Opportunity } from "../types";
+import { Lead, Opportunity } from "../../../types";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Opportunity, Stage, CustomField } from "./types";
+import { Opportunity, Stage, CustomField } from "../../types";
 import axios from "axios";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { extractApiError } from "./lib/utils";
+import { extractApiError } from "../../lib/utils";
 
 export const OppEditDialog: React.FC<{
     opportunity: Opportunity;

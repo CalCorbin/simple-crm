@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { CustomField } from "./types";
+import { CustomField } from "../../types";
 
 export const ManageFields: React.FC<{ onFieldsChanged: () => void }> = ({ onFieldsChanged }) => {
     const [fields, setFields] = useState<CustomField[]>([]);

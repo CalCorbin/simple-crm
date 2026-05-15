@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { ManageStages } from "../manage-stages";
-import { Stage } from "../types";
+import { Stage } from "../../../types";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);

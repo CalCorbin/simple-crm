@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios from "axios";
 import { Leads } from "../leads";
-import { Lead } from "../types";
+import { Lead } from "../../../types";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);

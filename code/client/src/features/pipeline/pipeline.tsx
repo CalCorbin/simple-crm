@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { PipelineReport } from "./types";
-import { formatCurrency } from "./lib/utils";
+import { PipelineReport } from "../../types";
+import { formatCurrency } from "../../lib/utils";
 
 export const Pipeline: React.FC = () => {
     const [report, setReport] = useState<PipelineReport | null>(null);

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Stage } from "./types";
+import { Stage } from "../../types";
 
 export const ManageStages: React.FC = () => {
     const [stages, setStages] = useState<Stage[]>([]);
