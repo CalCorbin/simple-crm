@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Leads } from "./leads";
 import { Pipeline } from "./pipeline";
+import { Forecast } from "./forecast";
 import { ManageFields } from "./manage-fields";
 import { ManageStages } from "./manage-stages";
 import { ManageSettings } from "./manage-settings";
 
-type Page = "home" | "pipeline" | "settings";
+type Page = "home" | "pipeline" | "forecast" | "settings";
 
 export const App: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -30,6 +31,9 @@ export const App: React.FC = () => {
                     <button onClick={() => setCurrentPage("pipeline")} className={`${navClass} ${currentPage === "pipeline" ? activeNavClass : inactiveNavClass}`}>
                         Pipeline
                     </button>
+                    <button onClick={() => setCurrentPage("forecast")} className={`${navClass} ${currentPage === "forecast" ? activeNavClass : inactiveNavClass}`}>
+                        Forecast
+                    </button>
                     <button onClick={() => setCurrentPage("settings")} className={`${navClass} ${currentPage === "settings" ? activeNavClass : inactiveNavClass}`}>
                         Settings
                     </button>
@@ -39,6 +43,8 @@ export const App: React.FC = () => {
             {currentPage === "home" && <Leads refreshTrigger={fieldsRefresh} />}
 
             {currentPage === "pipeline" && <Pipeline />}
+
+            {currentPage === "forecast" && <Forecast />}
 
             {currentPage === "settings" && (
                 <>

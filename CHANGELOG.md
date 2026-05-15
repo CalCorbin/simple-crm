@@ -4,6 +4,24 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-05-15 (forecast page)
+
+### Added
+- **`GET /forecast`** (server): returns all open (`stage.status === "pending"`) opportunities pre-aggregated into calendar-month buckets — Past, the six months starting from the current month, Beyond 6 Months, and No Close Date; optional `?groupBy=<customFieldId>` query param splits each bucket by an opportunity custom field value, with "Unassigned" for opportunities missing that field; returns `{ buckets: [...] }` with `count` and `totalExpectedValue` per bucket (or `groups` array when grouped)
+- **`forecastUtils.ts`** (server): three exported pure functions — `getBucketLabels(today)` generates the ordered 9-label list for a reference date, `getBucketLabel(closeDate, today)` maps a date string or null to its bucket label using UTC calendar-month comparison, `buildForecastBuckets(opps, today, customField?)` performs the full aggregation; functions accept an injectable `today: Date` so tests can use a fixed reference date
+- **`forecast.tsx`** (client): Forecast page rendered as a matrix table — rows are time buckets with amber/blue/gray left-border accents (Past / calendar months / tail buckets), columns expand dynamically when a group-by field is selected; empty bucket rows render at reduced opacity; group value cells show expected value + deal count, empty intersections show `—`; a "Total" column always present on the right
+- **Group-by pill controls**: opportunity-scoped custom fields rendered as pill buttons above the table; selecting a pill fetches `/api/forecast?groupBy=<id>` and adds group-value columns to the matrix; "None" pill reverts to ungrouped; pills hidden when no opportunity custom fields exist
+- **Forecast nav item** added to `App.tsx` between Pipeline and Settings
+
+### Changed
+- **`types.ts`** (client): added `ForecastGroup`, `ForecastBucket`, and `ForecastReport` interfaces
+
+### Tests
+- **`forecast.test.ts`** (server): 16 tests — `getBucketLabel` unit tests covering null, prior-month past, first-of-month boundary, mid-month, month-6 last day, and beyond-6 cases; `getBucketLabels` covering correct order and year-boundary wraparound; `buildForecastBuckets` integration tests covering won/lost exclusion, past/no-close-date placement, count and expected value summing, groupBy field splitting, and Unassigned fallback
+- **`App.test.tsx`** (client): updated nav test to assert four pages; four new tests — Forecast page navigation, matrix table renders bucket rows and Total column, group-by pills show only opportunity-scoped fields, selecting a pill fetches grouped data and renders group columns
+
+---
+
 ## 2026-05-14 (add opportunity UX + test coverage)
 
 ### Added

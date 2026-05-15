@@ -5,6 +5,7 @@ import { Stage } from "./entity/Stage";
 import { Opportunity } from "./entity/Opportunity";
 import { AppSetting } from "./entity/AppSetting";
 import { seedDatabase } from "./seed";
+import { buildForecastBuckets } from "./forecastUtils";
 import express from "express";
 import { DataSource } from "typeorm";
 
@@ -249,6 +250,25 @@ export function buildApp(ds: DataSource) {
         });
 
         res.json({ totalValue, expectedValue, byStage });
+    });
+
+    // Forecast report endpoint
+    app.get("/forecast", async (req, res) => {
+        const all = await ds.manager.getRepository(Opportunity).find();
+        const open = all.filter(opp => opp.stage.status === "pending");
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        const groupById = req.query.groupBy ? parseInt(req.query.groupBy as string) : null;
+        let customField = null;
+
+        if (groupById) {
+            customField = await ds.manager.getRepository(CustomField).findOne({ where: { id: groupById } });
+            if (!customField) return res.status(404).json({ error: "Custom field not found" });
+        }
+
+        const buckets = buildForecastBuckets(open, today, customField);
+        res.json({ buckets });
     });
 
     return app;
