@@ -39,7 +39,7 @@ export const LeadRow: React.FC<{ lead: Lead; oppCount: number; onUpdate: () => v
                 <TableCell>{lead.age}</TableCell>
                 <TableCell>{lead.phoneNumber}</TableCell>
             </TableRow>
-            {showOpps && <LeadOppPanel leadId={lead.id} />}
+            {showOpps && <LeadOppPanel lead={lead} />}
             <LeadEditDialog lead={lead} open={isEditing} onOpenChange={setIsEditing} onUpdate={onUpdate} />
         </>
     );
