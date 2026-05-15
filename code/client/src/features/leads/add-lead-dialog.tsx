@@ -13,7 +13,7 @@ export const AddLeadDialog: React.FC<{
                 <DialogHeader>
                     <DialogTitle>Add Lead</DialogTitle>
                 </DialogHeader>
-                {open && <AddLead onSuccess={onSuccess} refreshTrigger={refreshTrigger} />}
+                {open && <AddLead onSuccess={onSuccess} triggerRefresh={refreshTrigger} />}
             </DialogContent>
         </Dialog>
     );
